@@ -1,0 +1,14 @@
+import {Router} from "express";
+import {rateLimit} from "express-rate-limit";
+import {z} from "zod";
+import {config} from "../config/env";
+import {publicUser,sessions} from "../models/auth";
+import {register,login,newSession,tokenHash} from "../services/auth";
+import {authenticate,sessionToken} from "../middleware/auth";
+export const authRoutes=Router();
+const credentials=z.object({email:z.string().trim().email().max(254),password:z.string().min(12).max(128)}).strict();
+const registration=credentials.extend({name:z.string().trim().min(1).max(60),role:z.enum(["Creator","Brand"])});
+const limiter=rateLimit({windowMs:15*60000,limit:20,standardHeaders:"draft-8",legacyHeaders:false,message:{error:{code:"rate_limit",message:"Too many sign-in attempts. Try again later."}}});
+for(const path of ["register","login"] as const)authRoutes.post(`/${path}`,limiter,async(req,res)=>{const user=path==="register"?await register(registration.parse(req.body)):await (async()=>{const i=credentials.parse(req.body);return login(i.email,i.password);})();const previous=sessionToken(req);if(previous)await sessions.deleteOne({_id:tokenHash(previous)});const session=await newSession(user._id);res.cookie("markhecx_session",session.token,{httpOnly:true,secure:config.NODE_ENV==="production",sameSite:"lax",path:"/api",expires:session.expiresAt});res.status(path==="register"?201:200).json({user:publicUser(user),csrfToken:session.csrfToken});});
+authRoutes.get("/me",authenticate,(_req,res)=>{res.json({user:publicUser(res.locals.user),csrfToken:res.locals.session.csrfToken});});
+authRoutes.post("/logout",authenticate,async(_req,res)=>{await sessions.deleteOne({_id:res.locals.session._id});res.clearCookie("markhecx_session",{httpOnly:true,secure:config.NODE_ENV==="production",sameSite:"lax",path:"/api"});res.sendStatus(204);});
