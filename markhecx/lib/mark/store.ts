@@ -97,7 +97,7 @@ const portfolioSectionSchema = sectionSchema.extend({
   enabled: z.boolean(),
   source: z.enum(["profile", "custom"]),
 });
-const portfolioSchema = z.object({
+export const portfolioSchema = z.object({
   id: z.string(),
   ownerId: z.string(),
   username: z.string(),
@@ -115,7 +115,7 @@ const portfolioSchema = z.object({
   status: z.enum(["Draft", "Published", "Unlisted", "Private"]),
   savedAt: z.string().nullable(),
 });
-const projectSchema = z.object({
+export const projectSchema = z.object({
   id: z.string(),
   ownerId: z.string(),
   title: z.string(),
