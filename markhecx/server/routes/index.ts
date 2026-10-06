@@ -14,3 +14,6 @@ api.use(marketRoutes);
 
 import {hecxRoutes} from "./hecx";
 api.use("/hecx",hecxRoutes);
+
+import {communicationRoutes} from "./communication";
+api.use(communicationRoutes);
