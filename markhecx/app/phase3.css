@@ -1,0 +1,312 @@
+/* Phase 3 extends shared surfaces, tokens, motion and responsive conventions. */
+.creator-search {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+}
+.compact-search {
+  width: min(420px, 38vw);
+}
+.compact-search .global-search {
+  width: 100%;
+}
+.creator-search .filter-search,
+.creator-search .global-search {
+  margin: 0;
+}
+.creator-search input {
+  min-width: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.creator-search input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.search-suggestions {
+  position: absolute;
+  z-index: 45;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 380px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: 0 16px 45px #070707;
+  padding: 7px;
+}
+.search-suggestions button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px;
+  border-radius: 8px;
+  text-align: left;
+  color: var(--foreground);
+}
+.search-suggestions button[aria-selected="true"],
+.search-suggestions button:hover {
+  background: var(--secondary);
+}
+.search-suggestions button > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.search-suggestions small {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.suggestion-kind {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 72px;
+  color: var(--muted-foreground);
+}
+.discover-search-area {
+  max-width: 760px;
+  margin: 0 0 24px;
+  display: grid;
+  gap: 10px;
+}
+.discover-search-area .filter-search {
+  min-height: 56px;
+}
+.discover-page .category-chips {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 12px;
+}
+.discover-page .category-chips button {
+  flex-shrink: 0;
+}
+.discovery-filter-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.desktop-discovery-filters {
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0 24px;
+  margin-bottom: 20px;
+}
+.skill-filter {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+.skill-filter legend {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.skill-filter legend span {
+  margin-left: 10px;
+}
+.skill-filter > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  max-height: 145px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.skill-filter label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  cursor: pointer;
+  min-height: 30px;
+}
+.skill-filter input {
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+.active-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+.active-filter-chips button {
+  border: 1px solid var(--border);
+  font-size: 12px;
+}
+.mobile-filter-trigger {
+  display: none;
+}
+.discovery-filter-sheet {
+  max-height: 88dvh;
+  overflow: auto;
+  padding: 28px 20px max(20px, env(safe-area-inset-bottom));
+  border-radius: 22px 22px 0 0;
+}
+.discovery-filter-sheet .discovery-filter-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.discovery-results {
+  transition: opacity 160ms ease;
+}
+.discovery-results.updating {
+  opacity: 0.6;
+}
+.creator-result {
+  min-width: 0;
+  animation: enter 0.35s ease both;
+}
+.creator-result > .creator-card {
+  height: 100%;
+}
+.creator-card {
+  display: flex;
+  flex-direction: column;
+}
+.creator-card .creator-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.creator-card h3 a:hover {
+  color: var(--primary);
+}
+.creator-username {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  overflow-wrap: anywhere;
+}
+.creator-short-bio {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.65;
+  margin: 10px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 43px;
+}
+.creator-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 11px 0 0;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.creator-card .creator-meta {
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 17px;
+}
+.creator-card .save-button.saved {
+  color: var(--primary);
+}
+.creator-card .save-button {
+  transition:
+    color 0.18s,
+    transform 0.18s;
+}
+.creator-card .save-button:active {
+  transform: scale(0.9);
+}
+.creator-contact-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.creator-contact-actions button {
+  flex: 1;
+  font-size: 12px;
+  min-height: 40px;
+}
+.hecx-recommendation {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 10px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--ai-soft);
+}
+.hecx-recommendation summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.hecx-recommendation p {
+  margin-top: 8px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+.creator-skeleton {
+  min-height: 475px;
+}
+.discovery-back {
+  margin-bottom: 22px;
+}
+@media (max-width: 1100px) {
+  .discover-page .creator-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 800px) {
+  .desktop-filter-trigger,
+  .desktop-discovery-filters {
+    display: none;
+  }
+  .mobile-filter-trigger {
+    display: inline-flex;
+  }
+  .compact-search {
+    width: min(280px, 34vw);
+  }
+  .discover-page .discovery-controls {
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+  .discover-page .discovery-controls > [data-slot="select-trigger"] {
+    width: auto;
+    min-width: 145px;
+  }
+}
+@media (max-width: 600px) {
+  .discover-page .creator-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .compact-search {
+    display: none;
+  }
+  .discover-search-area {
+    max-width: none;
+  }
+  .discover-page .results-heading > span:last-child {
+    display: none;
+  }
+  .discover-page .discovery-controls .row {
+    flex-wrap: wrap;
+  }
+  .discovery-filter-sheet .discovery-filter-fields {
+    gap: 14px;
+  }
+  .suggestion-kind {
+    min-width: 58px;
+    font-size: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .creator-result {
+    animation: none;
+  }
+  .discovery-results {
+    transition: none;
+  }
+}
