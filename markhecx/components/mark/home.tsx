@@ -1,12 +1,13 @@
 "use client";
 import { Sparkles, Layers, Compass, Plus, Command, Star } from "lucide-react";
 import { useApp } from "./provider";
-import { creators } from "@/lib/mark/data";
+import { useDiscoveryCreators } from "./discovery/use-discovery";
 import { Card, Badge, Action, Brand } from "./ui";
 import { BrandDashboard } from "./marketplace/pages";
 import { CreatorCard } from "./creator-card";
 export function HomePage() {
   const { state } = useApp();
+  const creators = useDiscoveryCreators();
   if (state.signedIn && state.accountType === "Brand")
     return <BrandDashboard />;
   return (

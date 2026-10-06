@@ -1,3 +1,4 @@
+import { api } from "../api/client";
 import { z } from "zod";
 import type { AppState } from "../store";
 import { buildHECXContext } from "./context";
@@ -144,4 +145,8 @@ export function createHECXService(
     },
   };
 }
-export const hecxService = createHECXService();
+const localService = createHECXService();
+export const hecxService: ReturnType<typeof createHECXService> = {
+  analyze(state, options, signal) { return typeof window === "undefined" ? localService.analyze(state, options, signal) : api("/hecx/analyze", {method: "POST", body: options, signal}); },
+  suggest(action, source, signal) { return typeof window === "undefined" ? localService.suggest(action, source, signal) : api("/hecx/field", {method: "POST", body: {action, source}, signal}); }
+};

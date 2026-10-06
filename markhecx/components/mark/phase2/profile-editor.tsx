@@ -39,7 +39,7 @@ function ProfileEditorForm({ initial }: { initial: CreatorProfile }) {
         !draft.skills.some((s) => s.name.toLowerCase() === name.toLowerCase()),
     )
     .join(", ");
-  function save() {
+  async function save() {
     const next = {
       ...draft,
       name: draft.name.trim(),
@@ -62,13 +62,13 @@ function ProfileEditorForm({ initial }: { initial: CreatorProfile }) {
       );
       return;
     }
-    update((s) => ({
+    if (!(await update((s) => ({
       ...s,
       profile: next,
       portfolio: { ...s.portfolio, username: next.username },
-    }));
+    })))) return;
     log("Updated creator profile");
-    toast.success("Your profile is saved locally.");
+    toast.success("Your profile is saved.");
     router.push("/profile");
   }
   return (
@@ -125,7 +125,7 @@ function ProfileEditorForm({ initial }: { initial: CreatorProfile }) {
                   />
                   <span className="small-note">
                     Your portfolio address: /u/{draft.username || "username"}.
-                    Availability is checked against this local demo only.
+                    Your handle must be unique across creator accounts.
                   </span>
                 </label>
                 <label className="field">

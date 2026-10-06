@@ -28,7 +28,7 @@ export function Access({
     return (
       <EmptyState
         title={`${role} workspace`}
-        description={`Switch to ${role} in the profile menu to use this workspace. Your other drafts stay saved.`}
+        description={`Sign in with a ${role} account to use this workspace.`}
       >
         <Action href={actor.role === "Brand" ? "/brand" : "/campaigns"}>
           Back to your workspace
@@ -87,7 +87,7 @@ export function CampaignCard({
 export function MatchAnalysis({ match: m }: { match: CreatorMatch }) {
   return (
     <div className="match-analysis">
-      <Badge tone="purple">HECX · Deterministic local matching</Badge>
+      <Badge tone="purple">HECX · Explainable matching</Badge>
       <h3 className="match-score">
         {m.score === null ? "Not enough data" : `${m.score}% match`}
       </h3>
@@ -135,7 +135,7 @@ export function ConfirmAction({
 }: {
   label: string;
   description: string;
-  onConfirm: () => boolean;
+  onConfirm: () => boolean | Promise<boolean>;
   disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -155,8 +155,8 @@ export function ConfirmAction({
           <div className="row">
             <Button
               className="btn-primary"
-              onClick={() => {
-                if (onConfirm()) setOpen(false);
+              onClick={async () => {
+                if (await onConfirm()) setOpen(false);
               }}
             >
               Confirm {label.toLowerCase()}
@@ -209,10 +209,10 @@ export function InviteCreator({
         <DialogContent className="mark-dialog campaign-dialog">
           <DialogTitle>Invite creator</DialogTitle>
           <DialogDescription>
-            Stored on this browser only. No invitation is delivered externally.
+            The creator receives this invitation in their MarkHECX account.
           </DialogDescription>
           {actor.role !== "Brand" ? (
-            <p>Switch to Brand in your profile menu to invite creators.</p>
+            <p>Sign in with a Brand account to invite creators.</p>
           ) : !campaign ? (
             <EmptyState
               title="No open campaigns"
@@ -289,13 +289,13 @@ export function InviteCreator({
                 <>
                   <p>
                     Review the campaign, deliverables and your message above.
-                    Saving creates a local invitation only.
+                    The creator receives an in-app notification.
                   </p>
                   <Button
                     className="btn-primary"
-                    onClick={() => {
+                    onClick={async () => {
                       if (
-                        change((s) =>
+                        await change((s) =>
                           invitationService.send(
                             s,
                             actor,
@@ -314,7 +314,7 @@ export function InviteCreator({
                         )
                       ) {
                         toast.success(
-                          "Invitation saved locally. No external delivery.",
+                          "Invitation sent.",
                         );
                         setOpen(false);
                         setMessage("");
@@ -322,7 +322,7 @@ export function InviteCreator({
                       }
                     }}
                   >
-                    Send local invitation
+                    Send invitation
                   </Button>
                 </>
               ) : (

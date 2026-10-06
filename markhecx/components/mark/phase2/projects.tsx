@@ -50,7 +50,7 @@ export function ProjectDetail({ id }: { id: string }) {
     return (
       <EmptyState
         title="Project not found"
-        description="This project may not exist in this browser’s workspace."
+        description="This project may not exist in your workspace."
       >
         <Action href="/projects">Your projects</Action>
       </EmptyState>

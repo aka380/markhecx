@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useApp } from "../provider";
+import { useMatches } from "./use-matches";
 import { useMarketplace } from "./provider";
 import {
   Card,
@@ -70,18 +71,14 @@ export function BrandDashboard({ analytics = false }: { analytics?: boolean }) {
   );
 }
 function BrandDashboardContent({ analytics }: { analytics: boolean }) {
-  const { data, actor, change } = useMarketplace();
-  const pool = useDiscoveryCreators();
+  const { data, actor } = useMarketplace();
   const { state } = useApp();
   const campaigns = useMemo(
     () => data.campaigns.filter((c) => owns(actor, c)),
     [data.campaigns, actor],
   );
-  const matches = useMemo(
-    () =>
-      campaigns.map((c) => matchingService.matchCreatorsToCampaign(c, pool)),
-    [campaigns, pool],
-  );
+  const { matches: serverMatches } = useMatches();
+  const matches = campaigns.map(c => serverMatches[c.id] || []);
   const apps = applicationService.list(data, actor);
   return (
     <div className="page-enter">
@@ -92,24 +89,14 @@ function BrandDashboardContent({ analytics }: { analytics: boolean }) {
             ? "Know what happened."
             : "Your next collaboration starts here."
         }
-        description="Local records, clear requirements, and explainable creator matches."
+        description="Clear requirements, saved records, and explainable creator matches."
       >
         <Action href="/campaigns/new">Create campaign</Action>
         <Action href="/brand/profile" secondary>
           Brand profile
         </Action>
       </PageTitle>
-      <div className="row section-copy">
-        <ConfirmAction
-          label="Load demo campaigns"
-          description="Add three clearly labeled example campaigns, two sample applications, and a sample invitation to this brand workspace. These are illustrative records, not real business activity."
-          onConfirm={() => change((s) => campaignService.loadDemo(s, actor))}
-        />
-        <span className="small-note">
-          Optional examples use the existing sample creators. Complete your
-          brand profile first.
-        </span>
-      </div>
+
       <div className="campaign-stats">
         {[
           [
@@ -158,7 +145,7 @@ function BrandDashboardContent({ analytics }: { analytics: boolean }) {
           ) : (
             <EmptyState
               title="No campaigns yet"
-              description="Create a brief to start finding creators. Analytics will reflect your actual local activity."
+              description="Create a brief to start finding creators. Analytics will reflect your actual campaign activity."
             >
               <Action href="/campaigns/new">Create campaign</Action>
             </EmptyState>
@@ -200,7 +187,7 @@ function BrandDashboardContent({ analytics }: { analytics: boolean }) {
                 </p>
               ))}
             {!data.activity.some((x) => x.brandId === actor.id) && (
-              <p>No local campaign activity yet.</p>
+              <p>No campaign activity yet.</p>
             )}
           </Card>
         </section>
@@ -222,7 +209,7 @@ export function Analytics({ campaign: c }: { campaign: Campaign }) {
         {a.shortlisted} shortlisted · {a.accepted} accepted
       </p>
       <p className="small-note">
-        Views and external performance: not connected. Counts come from local
+        Views and external performance: not connected. Counts come from saved
         records.
       </p>
     </div>
@@ -239,7 +226,7 @@ export function BrandProfile({ username }: { username?: string }) {
     ) : (
       <EmptyState
         title="Brand not found"
-        description="This brand has not published a local profile."
+        description="This brand has not published a profile."
       >
         <Action href="/campaigns">Browse campaigns</Action>
       </EmptyState>
@@ -300,9 +287,9 @@ function BrandEditor({ brand }: { brand: Brand }) {
       <Card className="panel">
         <form
           className="form-grid"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            if (change((s) => brandService.save(s, actor, draft)))
+            if (await change((s) => brandService.save(s, actor, draft)))
               toast.success("Brand profile saved.");
           }}
         >
@@ -374,27 +361,11 @@ function BrandEditor({ brand }: { brand: Brand }) {
 }
 export function CampaignDiscovery({ saved = false }: { saved?: boolean }) {
   const { data, actor, ready } = useMarketplace();
-  const { state } = useApp();
   const [q, setQ] = useState(""),
     [category, setCategory] = useState("All categories"),
     [sort, setSort] = useState("Newest");
-  const { profile, projects, publication } = state;
-  const own = useMemo(
-    () => ownerCreator({ profile, projects, publication }),
-    [profile, projects, publication],
-  );
-  const matchMap = useMemo(
-    () =>
-      new Map(
-        data.campaigns
-          .filter(isPublic)
-          .map((c) => [
-            c.id,
-            matchingService.matchCreatorsToCampaign(c, [own])[0],
-          ]),
-      ),
-    [data.campaigns, own],
-  );
+  const { matches: serverMatches } = useMatches();
+  const matchMap = new Map(Object.entries(serverMatches).map(([id, matches]) => [id, matches[0]]));
   const campaigns = data.campaigns
     .filter(
       (c) =>
@@ -492,19 +463,12 @@ export function CampaignDiscovery({ saved = false }: { saved?: boolean }) {
 }
 export function CampaignDetail({ id }: { id: string }) {
   const { data, actor, change } = useMarketplace();
-  const { state, openAuth } = useApp();
+  const { openAuth } = useApp();
   const [tab, setTab] = useState("Overview"),
     [apply, setApply] = useState(false);
   const c = readableCampaign(data, actor, id);
-  const { profile, projects, publication } = state;
-  const own = useMemo(
-    () => ownerCreator({ profile, projects, publication }),
-    [profile, projects, publication],
-  );
-  const match = useMemo(
-    () => (c ? matchingService.matchCreatorsToCampaign(c, [own])[0] : null),
-    [c, own],
-  );
+  const matching = useMatches();
+  const match = matching.matches[id]?.[0] || null;
   if (!c)
     return (
       <EmptyState
@@ -560,8 +524,8 @@ export function CampaignDetail({ id }: { id: string }) {
                 key={status}
                 label={status === "Published" ? "Publish" : `Mark ${status}`}
                 description={`Change ${c.title} from ${c.status} to ${status}. Public visibility and application availability follow the campaign status.`}
-                onConfirm={() =>
-                  change((s) => campaignService.status(s, actor, id, status))
+                onConfirm={async () =>
+                  await change((s) => campaignService.status(s, actor, id, status))
                 }
               />
             ))}
@@ -605,9 +569,9 @@ export function CampaignDetail({ id }: { id: string }) {
                 aria-pressed={
                   actor.signedIn && data.savedCampaigns.includes(id)
                 }
-                onClick={() =>
+                onClick={async () =>
                   actor.signedIn
-                    ? change((s) =>
+                    ? await change((s) =>
                         campaignService.saveForCreator(s, actor, id),
                       )
                     : openAuth()
@@ -745,12 +709,11 @@ function ApplicationForm({
       <DialogContent className="mark-dialog campaign-dialog">
         <DialogTitle>Apply to {c.title}</DialogTitle>
         <DialogDescription>
-          Your message and selected evidence are shared with the brand in this
-          browser. No external submission is made.
+          Your message and selected evidence are shared with the campaign’s brand.
         </DialogDescription>
         <form
           className="form-grid"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             if (!state.profile.name.trim()) {
               toast.error(
@@ -775,7 +738,7 @@ function ApplicationForm({
               publicPortfolio: portfolio && !!publicPortfolio,
             };
             if (
-              change((s) =>
+              await change((s) =>
                 applicationService.submit(s, actor, {
                   id: crypto.randomUUID(),
                   campaignId: c.id,
@@ -796,7 +759,7 @@ function ApplicationForm({
                 }),
               )
             ) {
-              toast.success("Application submitted locally.");
+              toast.success("Application submitted.");
               onClose();
             }
           }}
@@ -863,7 +826,7 @@ function ApplicationForm({
             />
           </label>
           <Button type="submit" className="btn-primary">
-            Submit local application
+            Submit application
           </Button>
         </form>
       </DialogContent>
@@ -992,9 +955,9 @@ export function ApplicationsContent({
                             ? "Accept"
                             : "Reject"
                       }
-                      description={`Set this application to ${status}. This changes the local record and does not send an external notification.`}
-                      onConfirm={() =>
-                        change((s) =>
+                      description={`Set this application to ${status}. The creator will receive an in-app notification.`}
+                      onConfirm={async () =>
+                        await change((s) =>
                           applicationService.review(s, actor, a.id, status),
                         )
                       }
@@ -1004,9 +967,9 @@ export function ApplicationsContent({
                 ["Pending", "Shortlisted"].includes(a.status) && (
                   <ConfirmAction
                     label="Withdraw"
-                    description="Withdraw this local application? You can submit another application while the campaign is open."
-                    onConfirm={() =>
-                      change((s) =>
+                    description="Withdraw this application? You can submit another application while the campaign is open."
+                    onConfirm={async () =>
+                      await change((s) =>
                         applicationService.review(s, actor, a.id, "Withdrawn"),
                       )
                     }
@@ -1046,7 +1009,7 @@ export function InvitationsPage() {
       <PageTitle
         eyebrow="INVITATIONS"
         title="An invitation to collaborate."
-        description="Invitations are local records; external delivery is not connected."
+        description="Campaign invitations and responses are saved to your account."
       />
       <InvitationsContent />
     </Access>
@@ -1066,7 +1029,7 @@ export function InvitationsContent({ campaignId }: { campaignId?: string }) {
           description={
             actor.role === "Brand"
               ? "Open campaign matches and invite a creator to start a conversation."
-              : "Invitations from brands will appear here when they are saved in this browser."
+              : "Invitations from brands will appear here when a brand invites you."
           }
         />
       )}{" "}
@@ -1114,11 +1077,11 @@ export function InvitationsContent({ campaignId }: { campaignId?: string }) {
                     }
                     description={
                       status === "Accepted"
-                        ? "Record your interest locally. Submit an application from the campaign page to share your portfolio and project evidence."
-                        : "Update this local invitation status."
+                        ? "Accept the invitation. Submit an application from the campaign page to share your portfolio and project evidence."
+                        : "Update this invitation status."
                     }
-                    onConfirm={() =>
-                      change((s) =>
+                    onConfirm={async () =>
+                      await change((s) =>
                         invitationService.respond(s, actor, i.id, status),
                       )
                     }
@@ -1153,17 +1116,8 @@ function Matches({ id }: { id: string }) {
     [detail, setDetail] = useState<CreatorMatch | null>(null),
     [error, setError] = useState(false),
     [retry, setRetry] = useState(0);
-  const computed = useMemo(() => {
-    void retry;
-    try {
-      return {
-        matches: c ? matchingService.matchCreatorsToCampaign(c, pool) : [],
-        failed: false,
-      };
-    } catch {
-      return { matches: [], failed: true };
-    }
-  }, [c, pool, retry]);
+  const matching = useMatches();
+  const computed = { matches: matching.matches[id] || [], failed: !!matching.error };
   if (!c)
     return (
       <EmptyState
@@ -1310,15 +1264,16 @@ function Matches({ id }: { id: string }) {
           </SheetContent>
         </Sheet>
       </div>
-      {error || computed.failed ? (
+      {matching.loading ? <p role="status">Analyzing campaign evidence…</p> : error || computed.failed ? (
         <EmptyState
           title="HECX matching unavailable"
-          description="The local matching provider could not complete this comparison. Try again."
+          description="The matching service could not complete this comparison. Try again."
         >
           <Button
             onClick={() => {
               setError(false);
               setRetry(retry + 1);
+              matching.retry();
             }}
           >
             Retry
@@ -1423,8 +1378,8 @@ function SavedCreators() {
                   defaultValue={data.savedGroups[c.id] || ""}
                   placeholder="Ungrouped"
                   maxLength={80}
-                  onBlur={(e) =>
-                    change((s) =>
+                  onBlur={async (e) =>
+                    await change((s) =>
                       savedCreatorService.organize(
                         s,
                         actor,

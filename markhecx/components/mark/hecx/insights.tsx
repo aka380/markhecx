@@ -23,7 +23,7 @@ export function HecxInsights({ result }: { result: HecxResult }) {
     Array.isArray(value)
       ? value.map((id) => labels.get(id) || "Unavailable item").join("\n")
       : value;
-  function accept(text: string) {
+  async function accept(text: string) {
     if (!selected) return;
     const value = Array.isArray(selected.value)
       ? text
@@ -35,7 +35,7 @@ export function HecxInsights({ result }: { result: HecxResult }) {
           )
       : text;
     try {
-      update((current) => applyHECXChange(current, selected, "accept", value));
+      if (!(await update((current) => applyHECXChange(current, selected, "accept", value)))) return;
       setDecisions((d) => ({ ...d, [selected.id]: "Applied" }));
       setSelected(null);
       toast.success("Applied to your draft. Re-analyze for fresh suggestions.");

@@ -1,9 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import {
-  Bell,
-  MessageSquare,
   Clock,
   Sparkles,
   Shield,
@@ -23,6 +20,7 @@ import {
   EmptyState,
   Choice,
 } from "./ui";
+import { NotificationsPage } from "./notifications";
 import { MessagesPage } from "./marketplace/messages";
 import { CreatorCard } from "./creator-card";
 export const secondaryRoutes = [
@@ -38,13 +36,6 @@ export const secondaryRoutes = [
 ];
 export function SecondaryPage({ section }: { section: string }) {
   const { state, logout } = useApp();
-  const params = useSearchParams();
-  const recipient =
-    creators.find((c) => c.username === params.get("to")) ||
-    (state.publication?.portfolio.visibility === "Public" &&
-    state.publication.profile.username === params.get("to")
-      ? state.publication.profile
-      : null);
   const [sampleType, setSampleType] = useState("Creators");
   const privatePage = [
     "activity",
@@ -54,6 +45,7 @@ export function SecondaryPage({ section }: { section: string }) {
   ].includes(section);
   if (privatePage && !state.signedIn)
     return <SignInGate title="Your workspace, all together." />;
+  if (section === "notifications") return <NotificationsPage />;
   if (information[section]) {
     const content = information[section];
     return (
@@ -162,10 +154,9 @@ export function SecondaryPage({ section }: { section: string }) {
         <div className="settings-grid">
           <Card className="panel">
             <Shield className="accent-icon" />
-            <h2>Local profile</h2>
+            <h2>Your account</h2>
             <p className="section-copy">
-              Signed in as <strong>{state.profile.name}</strong>. This is a
-              local demo, with no password or identity verification.
+              Signed in as <strong>{state.profile.name}</strong>. Your session is securely managed by the backend.
             </p>
             <div className="row section-copy">
               <Action href="/profile" secondary>
@@ -200,11 +191,9 @@ export function SecondaryPage({ section }: { section: string }) {
           </Card>
           <Card className="panel">
             <Clock className="accent-icon" />
-            <h2>Data on this device</h2>
+            <h2>Saved workspace</h2>
             <p className="section-copy">
-              Your profile, saved creators, drafts, and local published snapshot
-              stay in this browser. Clearing browser site data removes them. No
-              cloud backup is connected.
+              Your profile, saved creators, drafts, and published portfolio are stored in the connected database. Sign in to access them.
             </p>
           </Card>
         </div>
@@ -216,7 +205,7 @@ export function SecondaryPage({ section }: { section: string }) {
         <PageTitle
           eyebrow="YOUR CREATIVE TRAIL"
           title="Little steps add up."
-          description="Recent changes in your local workspace."
+          description="Recent changes in your workspace."
         />
         {state.activity.length ? (
           <Card className="panel">
@@ -235,7 +224,7 @@ export function SecondaryPage({ section }: { section: string }) {
         ) : (
           <EmptyState
             title="Your next chapter starts here."
-            description="Profile edits and portfolio changes will appear in this local activity log."
+            description="Your saved workspace activity appears here."
           >
             <Action href="/portfolio">Open portfolio studio</Action>
           </EmptyState>
@@ -243,45 +232,6 @@ export function SecondaryPage({ section }: { section: string }) {
       </div>
     );
   if (section === "messages") return <MessagesPage />;
-  if (section === "notifications") {
-    const messages = false;
-    return (
-      <div className="page-enter">
-        <PageTitle
-          eyebrow="YOUR WORKSPACE"
-          title={
-            messages
-              ? "Good conversations start here."
-              : "A little space for updates."
-          }
-          description={
-            messages
-              ? recipient
-                ? `Message ${recipient.name} · @${recipient.username}`
-                : "Your messages will have a home here."
-              : "Your notifications will appear here."
-          }
-        />
-        <Card className="panel">
-          <div className="empty-icon">
-            {messages ? <MessageSquare /> : <Bell />}
-          </div>
-          <EmptyState
-            title={messages ? "No conversations yet" : "You’re all caught up"}
-            description={
-              messages
-                ? "Messaging is a future feature. No conversations or contacts are connected in this demo."
-                : "No notification service is connected yet. This view demonstrates the signed-in shell."
-            }
-          >
-            <Action href="/creators" secondary>
-              Explore creators
-            </Action>
-          </EmptyState>
-        </Card>
-      </div>
-    );
-  }
   return (
     <EmptyState
       title="This page couldn’t be found."

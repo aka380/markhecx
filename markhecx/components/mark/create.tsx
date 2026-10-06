@@ -99,10 +99,10 @@ function CreateContent() {
           <Badge>Saved to your local profile</Badge>
           <form
             className="form-grid section-copy"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               if (!title.trim()) return;
-              update((s) => ({
+              if (!(await update((s) => ({
                 ...s,
                 profile: {
                   ...s.profile,
@@ -115,7 +115,7 @@ function CreateContent() {
                     },
                   ],
                 },
-              }));
+              })))) return;
               log(`Added ${type.toLowerCase()}: ${title.trim()}`);
               toast.success(`${type} saved locally.`);
               router.push("/profile");

@@ -1,11 +1,12 @@
 "use client";
-import { creators } from "@/lib/mark/data";
+import { useDiscoveryCreators } from "./discovery/use-discovery";
 import { useApp, SignInGate } from "./provider";
 import { PageTitle, EmptyState, Action } from "./ui";
 import { PublicPortfolio } from "./phase2/portfolio-pages";
 import { PortfolioView } from "./portfolio-view";
 export function PortfolioPage({ id }: { id: string }) {
   const { state } = useApp();
+  const creators = useDiscoveryCreators();
   if (id === "mine" && state.publication)
     return <PublicPortfolio username={state.publication.portfolio.username} />;
   if (id === "mine") {

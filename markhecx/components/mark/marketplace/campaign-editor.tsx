@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/mark/api/client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -133,7 +134,7 @@ function Editor({ id }: { id?: string }) {
       </label>
     );
   }
-  function save(publish = false) {
+  async function save(publish = false) {
     setError("");
     const errors = campaignErrors(draft, publish || draft.status !== "Draft");
     if (errors.length) {
@@ -141,7 +142,7 @@ function Editor({ id }: { id?: string }) {
       return;
     }
     if (
-      change((s) => {
+      await change((s) => {
         const saved = campaignService.save(s, actor, draft);
         return publish
           ? campaignService.status(saved, actor, draft.id, "Published")
@@ -149,18 +150,18 @@ function Editor({ id }: { id?: string }) {
       })
     ) {
       toast.success(
-        publish ? "Campaign published locally." : "Campaign saved locally.",
+        publish ? "Campaign published." : "Campaign saved.",
       );
       router.push(`/campaigns/${draft.id}`);
     }
   }
   function assist(action: CampaignHECXAction) {
     setBusy(true);
-    queueMicrotask(() => {
+    queueMicrotask(async () => {
       try {
         setSuggestion({
           action,
-          result: suggestCampaign(action, draft),
+          result: await api<ReturnType<typeof suggestCampaign>>("/hecx/campaign", {method: "POST", body: {action, campaign: draft}}),
           before: JSON.stringify(draft),
         });
       } catch {
@@ -186,7 +187,7 @@ function Editor({ id }: { id?: string }) {
       />
       {draft.status !== "Draft" && (
         <p className="small-note">
-          Saving changes updates the current local campaign. Review the details
+          Saving changes updates the campaign. Review the details
           before saving.
         </p>
       )}
@@ -550,7 +551,7 @@ function Editor({ id }: { id?: string }) {
                 {step === 6 && (
                   <>
                     <p>
-                      Publishing makes this campaign visible in this browser’s
+                      Publishing makes this campaign visible in
                       creator experience.
                     </p>
                     <Button

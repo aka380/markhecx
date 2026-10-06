@@ -24,6 +24,7 @@ export function MessagesPage() {
     <Access>
       <Messages
         key={params.toString()}
+        conversationId={params.get("conversation") || ""}
         campaignId={params.get("campaign") || ""}
         creatorId={params.get("creator") || ""}
         username={params.get("to") || ""}
@@ -32,24 +33,26 @@ export function MessagesPage() {
   );
 }
 function Messages({
+  conversationId,
   campaignId,
   creatorId,
   username,
 }: {
+  conversationId: string;
   campaignId: string;
   creatorId: string;
   username: string;
 }) {
   const { data, actor, change } = useMarketplace();
   const pool = useDiscoveryCreators();
-  const [selected, setSelected] = useState(""),
+  const [selected, setSelected] = useState(conversationId),
     [campaign, setCampaign] = useState(campaignId),
     [creator, setCreator] = useState(
       creatorId || pool.find((c) => c.username === username)?.id || "",
     ),
     [text, setText] = useState("");
   const conversations = messageService.list(data, actor);
-  const current = conversations.find((c) => c.id === selected);
+  const current = conversations.find((c) => c.id === selected) || conversations.find(c => c.campaignId === campaign && c.creatorId === (actor.role === "Creator" ? actor.id : creator));
   const campaigns = data.campaigns.filter((c) =>
     actor.role === "Brand"
       ? owns(actor, c)
@@ -76,7 +79,7 @@ function Messages({
       <PageTitle
         eyebrow="MESSAGES / LOCAL CONVERSATIONS"
         title="Turn interest into a conversation."
-        description="Messages stay in this browser. No real delivery, read receipts, or simulated replies."
+        description="Messages are shared with the other participant. Refresh to check for new replies."
       />
       <div className="campaign-editor-grid">
         <Card className="panel">
@@ -169,16 +172,15 @@ function Messages({
             {activeCampaign && recipient ? (
               <form
                 className="form-grid"
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
                   const target = {
                     campaignId: activeCampaign.id,
                     brandId: activeCampaign.brandId,
                     creatorId: recipient,
                   };
-                  let nextId = "";
                   if (
-                    change((s) => {
+                    await change((s) => {
                       const next = messageService.send(
                         s,
                         actor,
@@ -186,17 +188,13 @@ function Messages({
                         text,
                         choices.map((c) => c.id),
                       );
-                      nextId = next.conversations.find(
-                        (c) =>
-                          c.brandId === target.brandId &&
-                          c.creatorId === target.creatorId &&
-                          c.campaignId === target.campaignId,
-                      )!.id;
                       return next;
                     })
                   ) {
                     setText("");
-                    setSelected(nextId);
+                    setSelected("");
+                    setCampaign(target.campaignId);
+                    setCreator(target.creatorId);
                   }
                 }}
               >
@@ -210,11 +208,11 @@ function Messages({
                   />
                 </label>
                 <Button className="btn-primary" type="submit">
-                  Save local message
+                  Send message
                 </Button>
                 <p className="small-note">
                   Switch account type to inspect the other side of a
-                  conversation with your local creator. Sample creators do not
+                  conversation with a creator. Sample creators do not
                   send replies.
                 </p>
               </form>

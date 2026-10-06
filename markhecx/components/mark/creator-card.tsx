@@ -58,7 +58,7 @@ export function CreatorCard({
         <Avatar name={c.name} color={c.color} image={c.avatar} />
         <span className="sample-label">
           {c.source === "local"
-            ? "Published on this browser"
+            ? "Published creator"
             : "Sample creator"}
         </span>
         <h3>

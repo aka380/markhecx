@@ -84,7 +84,7 @@ export function menuHref(group: string, item: string) {
   return "/" + item.toLowerCase();
 }
 export function Shell({ children }: { children: React.ReactNode }) {
-  const { state, openAuth, logout, update } = useApp();
+  const { state, openAuth, logout } = useApp();
   const path = usePathname();
   const router = useRouter();
   const params = useSearchParams();
@@ -168,7 +168,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                   <DropdownMenuLabel>
                     <span className="menu-name">{state.profile.name}</span>
                     <span className="small-note">
-                      {brand ? "Brand / Agency" : "Creator"} · Local demo
+                      {brand ? "Brand / Agency" : "Creator"} · Account
                     </span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -190,17 +190,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onSelect={() => {
-                      update((s) => ({
-                        ...s,
-                        accountType: brand ? "Creator" : "Brand",
-                      }));
-                      router.push(brand ? "/" : "/brand");
-                    }}
-                  >
-                    Switch to {brand ? "Creator" : "Brand / Agency"}
-                  </DropdownMenuItem>
+
                   <DropdownMenuItem
                     onSelect={() => {
                       logout();
@@ -234,7 +224,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <footer className="site-footer">
         <Brand />
         <span>A place for your next chapter.</span>
-        <span>Phase 5 · Local demo</span>
+        <span>MarkHECX · Connected workspace</span>
       </footer>
       <nav className="bottom-nav" aria-label="Main navigation">
         <Link

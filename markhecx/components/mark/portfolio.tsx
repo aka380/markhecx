@@ -78,8 +78,8 @@ export function PortfolioBuilder() {
   const profile = profileDraft || state.profile;
   const selected = portfolio.sections.find((s) => s.id === active);
   const visible = visibleSections(portfolio, profile, state.projects);
-  function setPortfolio(p: Portfolio) {
-    update((s) => ({ ...s, portfolio: p }));
+  async function setPortfolio(p: Portfolio) {
+    return update((s) => ({ ...s, portfolio: p }));
   }
   function patchSection(patch: Partial<PortfolioSection>) {
     setPortfolio({
@@ -89,12 +89,12 @@ export function PortfolioBuilder() {
       ),
     });
   }
-  function saveDraft() {
-    setPortfolio({ ...portfolio, savedAt: new Date().toISOString() });
+  async function saveDraft() {
+    if (!(await setPortfolio({ ...portfolio, savedAt: new Date().toISOString() }))) return;
     log("Saved portfolio draft");
-    toast.success("Portfolio draft saved on this browser.");
+    toast.success("Portfolio draft saved.");
   }
-  function publishNow() {
+  async function publishNow() {
     try {
       if (profileDraft) {
         toast.error("Save or cancel your profile edits before publishing.");
@@ -115,7 +115,7 @@ export function PortfolioBuilder() {
         state.profile,
         state.projects,
       );
-      update((s) => ({
+      if (!(await update((s) => ({
         ...s,
         publication,
         portfolio: {
@@ -123,10 +123,10 @@ export function PortfolioBuilder() {
           savedAt: publication.publishedAt,
           status: publication.portfolio.status,
         },
-      }));
+      })))) return;
       log("Published portfolio: " + publication.portfolio.visibility);
       setPublish(false);
-      toast.success("Your local published portfolio is ready.");
+      toast.success("Your published portfolio is ready.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Unable to publish.");
     }
@@ -601,7 +601,7 @@ export function PortfolioBuilder() {
               />
               <Button
                 className="btn-primary"
-                onClick={() => {
+                onClick={async () => {
                   const next = {
                     ...profileDraft,
                     name: profileDraft.name.trim(),
@@ -611,11 +611,11 @@ export function PortfolioBuilder() {
                   const errors = profileErrors(next);
                   setErrors(errors);
                   if (Object.keys(errors).length) return;
-                  update((s) => ({
+                  if (!(await update((s) => ({
                     ...s,
                     profile: next,
                     portfolio: { ...s.portfolio, username: next.username },
-                  }));
+                  })))) return;
                   setProfileDraft(null);
                   toast.success("Source profile updated.");
                 }}

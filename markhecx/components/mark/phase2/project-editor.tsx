@@ -27,7 +27,7 @@ export function ProjectEditor({ id }: { id?: string }) {
     return (
       <EmptyState
         title="Project not found"
-        description="Choose a project from your local workspace."
+        description="Choose a project from your workspace."
       >
         <Action href="/projects">All projects</Action>
       </EmptyState>
@@ -49,7 +49,7 @@ function ProjectEditorForm({ initial }: { initial: Project }) {
   function field(key: keyof Project, value: unknown) {
     setDraft((p) => ({ ...p, [key]: value }));
   }
-  function save(status: Project["status"]) {
+  async function save(status: Project["status"]) {
     const next = {
       ...draft,
       title: draft.title.trim(),
@@ -66,12 +66,12 @@ function ProjectEditorForm({ initial }: { initial: Project }) {
       setTab(errors.title ? "Overview" : errors.media ? "Media" : "Details");
       return;
     }
-    update((s) => ({
+    if (!(await update((s) => ({
       ...s,
       projects: s.projects.some((p) => p.id === next.id)
         ? s.projects.map((p) => (p.id === next.id ? next : p))
         : [next, ...s.projects],
-    }));
+    })))) return;
     log(
       `${status === "Draft" ? "Saved draft" : "Added project"}: ${next.title}`,
     );
@@ -271,7 +271,7 @@ function ProjectEditorForm({ initial }: { initial: Project }) {
           <TabsContent value="Media">
             <div className="stack">
               <p className="small-note">
-                Images stay on this browser. Add up to three PNG, JPEG, or WebP
+                Images are saved with your project. Add up to three PNG, JPEG, or WebP
                 images, each under 300 KB. Video links open on their original
                 site.
               </p>

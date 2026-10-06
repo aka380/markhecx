@@ -1,11 +1,4 @@
 "use client";
-import { useMemo } from "react";
-import { useApp } from "../provider";
-import { discoveryCreators } from "@/lib/mark/discovery";
-export function useDiscoveryCreators() {
-  const { state } = useApp();
-  return useMemo(
-    () => discoveryCreators(state.publication),
-    [state.publication],
-  );
-}
+import { Creator } from "@/lib/mark/data";
+import { useAPIResource } from "../api-resource";
+export function useDiscoveryCreators() { return useAPIResource<{creators: Creator[]}>("/creators").data?.creators || []; }

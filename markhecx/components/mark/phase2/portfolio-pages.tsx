@@ -2,17 +2,14 @@
 import { Eye, Pencil, Copy, Globe, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
-import { creators } from "@/lib/mark/data";
+import { useAPIResource } from "../api-resource";
+import type { Publication } from "@/lib/mark/models";
 import {
-  hasPortfolio,
-  sampleProfile,
-  sampleProjects,
-  samplePortfolio,
   safeDiscoveryReturn,
 } from "@/lib/mark/discovery";
 import { useApp, SignInGate } from "../provider";
 import { PageTitle, Card, Badge, Action, Button, EmptyState } from "../ui";
-import { visibleSections, canViewPublication } from "@/lib/mark/domain";
+import { visibleSections } from "@/lib/mark/domain";
 import { PortfolioCanvas } from "./portfolio-canvas";
 export function PortfolioHome() {
   const { state } = useApp();
@@ -86,7 +83,7 @@ export function PortfolioHome() {
             <>
               <h2>Ready when you are.</h2>
               <p className="section-copy">
-                Customize your draft, preview it, then publish a local version.
+                Customize your draft, preview it, then publish your portfolio.
               </p>
             </>
           )}
@@ -94,8 +91,7 @@ export function PortfolioHome() {
       </div>
       <div className="info-line section-copy">
         <Globe size={17} />
-        Phase 2 uses browser-local data. Public and unlisted links work on this
-        browser; sharing to another device requires future hosting and storage.
+        Public portfolios appear in discovery. Unlisted portfolios are available by link; private portfolios are visible only to you.
       </div>
     </div>
   );
@@ -126,54 +122,12 @@ export function PublicPortfolio({ username }: { username: string }) {
   const { state, ready } = useApp();
   const params = useSearchParams();
   const back = safeDiscoveryReturn(params.get("from"));
-  const sample = creators.find(
-    (c) => c.username.toLowerCase() === username.toLowerCase(),
-  );
-  if (sample)
-    return hasPortfolio(sample) ? (
-      <div className="page-enter">
-        <PageTitle
-          eyebrow="SAMPLE PORTFOLIO"
-          title={sample.name}
-          description="Fictional creator showcase · no invented credentials or analytics"
-        >
-          <Action
-            href={`/profile/${sample.username}?from=${encodeURIComponent(back)}`}
-            secondary
-          >
-            Back to profile
-          </Action>
-          <Action href={back} secondary>
-            Back to discovery
-          </Action>
-        </PageTitle>
-        <PortfolioCanvas
-          portfolio={samplePortfolio(sample)}
-          profile={sampleProfile(sample)}
-          projects={sampleProjects(sample)}
-        />
-      </div>
-    ) : (
-      <EmptyState
-        title="No public portfolio yet"
-        description="This sample creator has not added a public portfolio."
-      >
-        <Action href={`/profile/${sample.username}`} secondary>
-          View profile
-        </Action>
-      </EmptyState>
-    );
-  if (!ready) return <p role="status">Loading portfolio…</p>;
-  if (!canViewPublication(state.publication, username, state.signedIn))
-    return (
-      <EmptyState
-        title="This portfolio isn’t available."
-        description="It may be private, unpublished, or not saved on this browser."
-      >
-        <Action href="/">Back to MarkHECX</Action>
-      </EmptyState>
-    );
-  const pub = state.publication!;
+  const own = state.signedIn && state.publication?.profile.username === username;
+  const resource = useAPIResource<{publication: Publication}>(own ? null : `/public/portfolios/${encodeURIComponent(username)}`);
+  if (!ready || resource.loading) return <p role="status">Loading portfolio…</p>;
+  const pub = own ? state.publication : resource.data?.publication;
+  if (!pub) return <EmptyState title="This portfolio isn’t available." description={resource.error || "It may be private or unpublished."}><Button onClick={resource.retry}>Retry</Button><Action href="/">Back to MarkHECX</Action></EmptyState>;
+
   return (
     <div className="page-enter">
       <div className="discovery-back">
@@ -191,9 +145,9 @@ export function PublicPortfolio({ username }: { username: string }) {
           {pub.portfolio.status}
         </Badge>
         <span className="small-note">
-          Local published version · /u/{pub.portfolio.username}
+          Published version · /u/{pub.portfolio.username}
         </span>
-        {state.signedIn && (
+        {own && (
           <Action href="/portfolio/builder" secondary>
             Edit your draft
           </Action>
@@ -206,7 +160,7 @@ export function PublicPortfolio({ username }: { username: string }) {
                 `${location.origin}/u/${encodeURIComponent(pub.portfolio.username)}`,
               );
               toast(
-                "Link copied. It works only on this browser until hosting is connected.",
+                "Portfolio link copied.",
               );
             } catch {
               toast.error(
@@ -216,7 +170,7 @@ export function PublicPortfolio({ username }: { username: string }) {
           }}
         >
           <Copy size={14} />
-          Copy local link
+          Copy link
         </Button>
       </div>
       <h1 className="sr-only">{pub.profile.name}’s portfolio</h1>

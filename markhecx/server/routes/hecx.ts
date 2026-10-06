@@ -6,3 +6,5 @@ hecxRoutes.post("/analyze",async(req,res)=>{try{res.json(await hecxBackend.analy
 hecxRoutes.post("/field",async(req,res)=>{const body=z.object({action:z.enum(["Analyze Profile","Improve Bio","Suggest Creator Identity","Suggest Skills","Improve Portfolio","Improve Section","Generate Structure","Improve Description","Suggest Tags","Improve Technical Explanation","Summarize Project"]),source:z.string().max(12000)}).strict().parse(req.body);res.json(await hecxBackend.field(body.action,body.source));});
 hecxRoutes.post("/campaign",async(req,res)=>{const body=z.object({campaign:campaignSchema,action:z.enum(campaignHECXActions)}).strict().parse(req.body);res.json(hecxBackend.campaign(res.locals.user,body.campaign,body.action));});
 hecxRoutes.get("/matches/:id",async(req,res)=>res.json({matches:await hecxBackend.matches(res.locals.user,req.params.id)}));
+
+hecxRoutes.get("/matches",async(_req,res)=>res.json({matches:await hecxBackend.allMatches(res.locals.user)}));

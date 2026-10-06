@@ -10,6 +10,7 @@ const eslintConfig = defineConfig([
     // Default ignores of eslint-config-next:
     ".next/**",
     "dist/**",
+    "server/dist/**",
     ".sites-runtime/**",
     ".wrangler/**",
     "out/**",

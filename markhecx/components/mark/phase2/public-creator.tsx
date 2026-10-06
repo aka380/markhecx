@@ -1,8 +1,10 @@
 "use client";
+import { useAPIResource } from "../api-resource";
+import type { Creator } from "@/lib/mark/data";
+import type { Publication } from "@/lib/mark/models";
 import { useSearchParams } from "next/navigation";
 import { Bookmark } from "lucide-react";
 import {
-  discoveryCreators,
   hasPortfolio,
   safeDiscoveryReturn,
   sampleProfile,
@@ -23,22 +25,18 @@ export function PublicCreatorProfile({
   const { state, ready, toggleSave } = useApp();
   const params = useSearchParams();
   const back = safeDiscoveryReturn(params.get("from"));
-  if (!ready) return <CreatorGridSkeleton />;
-  const publication =
-    state.publication?.portfolio.visibility === "Public"
-      ? state.publication
-      : null;
-  const c = discoveryCreators(publication).find((c) =>
-    localOnly
-      ? c.source === "local"
-      : c.username.toLowerCase() === username?.toLowerCase(),
-  );
+  const target = localOnly ? state.publication?.profile.username : username;
+  const resource = useAPIResource<{creator: Creator; publication: Publication}>(target ? `/creators/username/${encodeURIComponent(target)}` : null);
+  if (!ready || resource.loading) return <CreatorGridSkeleton />;
+  const publication = resource.data?.publication;
+  const c = resource.data?.creator;
   if (!c)
     return (
       <EmptyState
         title="Creator not available"
-        description="This creator has no public profile available in this demo."
+        description="This creator has no public profile available."
       >
+        {resource.error && <Button onClick={resource.retry}>Retry</Button>}
         <Action href={back}>Back to discovery</Action>
       </EmptyState>
     );
@@ -92,7 +90,7 @@ export function PublicCreatorProfile({
         actions={actions}
         label={
           c.source === "local"
-            ? "Published on this browser"
+            ? "Published creator"
             : "Sample creator · fictional profile"
         }
       />

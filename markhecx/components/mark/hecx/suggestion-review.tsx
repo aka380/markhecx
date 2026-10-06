@@ -23,7 +23,7 @@ export function SuggestionReview({
   reason: string;
   before?: string;
   value: string;
-  onAccept?: (value: string) => boolean | void;
+  onAccept?: (value: string) => boolean | void | Promise<boolean | void>;
   onReject: () => void;
   editable?: boolean;
   allowEmpty?: boolean;

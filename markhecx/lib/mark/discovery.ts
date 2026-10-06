@@ -145,7 +145,7 @@ export function getRecommendations(
   );
   const interests = new Set(p.tags.map(normalize));
   return pool
-    .filter((c) => c.source !== "local")
+    .filter((c) => c.username !== p.username && c.id !== "local")
     .map((c) => {
       const shared = c.skills.filter((s) => skills.has(normalize(s)));
       const related = c.skills.filter(

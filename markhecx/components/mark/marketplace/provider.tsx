@@ -1,93 +1,29 @@
 "use client";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  useMemo,
-} from "react";
+import { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { MarketplaceState, Actor } from "@/lib/mark/marketplace/models";
-import { initialMarketplace } from "@/lib/mark/marketplace/fixtures";
-import { localMarketplaceProvider } from "@/lib/mark/marketplace/services";
+import { api, dataChanged } from "@/lib/mark/api/client";
+import { emptyMarketplace, persistMarket } from "@/lib/mark/api/marketplace";
 import { useApp } from "../provider";
-const Context = createContext<{
-  data: MarketplaceState;
-  ready: boolean;
-  actor: Actor;
-  change: (fn: (s: MarketplaceState) => MarketplaceState) => boolean;
-} | null>(null);
-export function MarketplaceProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { state } = useApp();
-  const [data, setData] = useState(initialMarketplace),
-    [ready, setReady] = useState(false);
-  const live = useRef(data);
+import { Button } from "../ui";
+const Context = createContext<{ data: MarketplaceState; ready: boolean; actor: Actor; change: (fn: (s: MarketplaceState) => MarketplaceState) => Promise<boolean> } | null>(null);
+export function MarketplaceProvider({ children }: { children: React.ReactNode }) {
+  const { state, user, ready: accountReady } = useApp();
+  const [data, setData] = useState(emptyMarketplace), [ready, setReady] = useState(false), [error, setError] = useState(""), [retry, setRetry] = useState(0);
+  const live = useRef(data), generation = useRef(0), queue = useRef<Promise<unknown>>(Promise.resolve());
   useEffect(() => {
-    let mounted = true;
-    queueMicrotask(() => {
-      if (mounted) {
-        const loaded = localMarketplaceProvider.read();
-        live.current = loaded;
-        setData(loaded);
-        setReady(true);
-      }
-    });
-    return () => {
-      mounted = false;
-    };
+    const current = ++generation.current;
+    live.current = emptyMarketplace;
+    const controller = new AbortController();
+    queueMicrotask(() => { setData(emptyMarketplace); setReady(false); setError(""); });
+    if (accountReady) api<MarketplaceState>(state.signedIn ? "/marketplace" : "/marketplace/public", { signal: controller.signal }).then(result => { if (current === generation.current) { live.current = result; setData(result); setReady(true); } }).catch(e => { if (!controller.signal.aborted) { setError(e.message); setReady(true); } });
+    return () => { controller.abort(); generation.current++; };
+  }, [accountReady, state.signedIn, user?.id, retry]);
+  const change = useCallback((fn: (s: MarketplaceState) => MarketplaceState): Promise<boolean> => {
+    const current = generation.current;
+    const task = queue.current.then(async () => { if (current !== generation.current) return false; try { const result = await persistMarket(live.current, fn(live.current)); if (current !== generation.current) return false; live.current = result; setData(result); dataChanged(); return true; } catch (e) { toast.error((e as Error).message); return false; } }); queue.current = task; return task;
   }, []);
-  const change = useCallback(
-    (fn: (s: MarketplaceState) => MarketplaceState) => {
-      try {
-        const next = fn(live.current);
-        live.current = next;
-        setData(next);
-        try {
-          localMarketplaceProvider.write(next);
-        } catch {
-          toast.error(
-            "Browser storage is full or unavailable. Changes last only in this session.",
-          );
-        }
-        return true;
-      } catch (e) {
-        toast.error(
-          e instanceof Error ? e.message : "The change could not be saved.",
-        );
-        return false;
-      }
-    },
-    [],
-  );
-  const actor = useMemo<Actor>(
-    () => ({
-      signedIn: state.signedIn,
-      role: state.accountType,
-      id: state.accountType === "Brand" ? "local-brand" : "local",
-    }),
-    [state.signedIn, state.accountType],
-  );
-  return (
-    <Context.Provider
-      value={{
-        data,
-        ready,
-        actor,
-        change,
-      }}
-    >
-      {children}
-    </Context.Provider>
-  );
+  const actor = useMemo<Actor>(() => ({ signedIn: state.signedIn, role: state.accountType, id: user?.id || "" }), [state.signedIn, state.accountType, user?.id]);
+  return <Context.Provider value={{ data, ready, actor, change }}>{error && <div role="alert" className="info-line">{error}<Button onClick={() => setRetry(v => v + 1)}>Retry campaigns</Button></div>}{children}</Context.Provider>;
 }
-export function useMarketplace() {
-  const value = useContext(Context);
-  if (!value) throw Error("MarketplaceProvider required");
-  return value;
-}
+export function useMarketplace() { const value = useContext(Context); if (!value) throw Error("MarketplaceProvider required"); return value; }

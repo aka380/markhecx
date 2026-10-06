@@ -13,6 +13,8 @@ await build({
     {
       name: "test-context",
       setup(build) {
+        build.onResolve({filter: /api-resource$/}, () => ({path: "resources", namespace: "api-fixture"}));
+        build.onLoad({filter: /.*/, namespace: "api-fixture"}, () => ({contents: "export const useAPIResource=path=>({data:globalThis.__resource?.(path),loading:false,retry(){}});", loader: "js"}));
         build.onResolve({ filter: /^next\/(link|navigation)$/ }, (args) => ({
           path: args.path,
           namespace: "router",
