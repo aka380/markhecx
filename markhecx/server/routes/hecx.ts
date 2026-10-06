@@ -80,7 +80,7 @@ hecxRoutes.post("/analyze", async (req, res) => {
   } catch (e) {
     if (e instanceof HecxError)
       throw new ApiError(
-        e.code === "timeout" ? 504 : 503,
+        e.code === "timeout" ? 504 : e.code === "rate_limit" ? 429 : 503,
         e.code,
         errorMessage(e),
       );
@@ -114,7 +114,9 @@ hecxRoutes.post("/campaign", async (req, res) => {
     .object({ campaign: campaignSchema, action: z.enum(campaignHECXActions) })
     .strict()
     .parse(req.body);
-  res.json(hecxBackend.campaign(res.locals.user, body.campaign, body.action));
+  res.json(
+    await hecxBackend.campaign(res.locals.user, body.campaign, body.action),
+  );
 });
 hecxRoutes.get("/matches/:id", async (req, res) =>
   res.json({

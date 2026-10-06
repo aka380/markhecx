@@ -46,7 +46,7 @@ export function HecxPage() {
         title="Your intelligence layer for MarkHECX."
         description="Understand your data. Review the reasoning. Decide what changes."
       >
-        <Badge tone="purple">MockHECX · Local analysis</Badge>
+        <Badge tone="purple">HECX · Secure backend analysis</Badge>
       </PageTitle>
       {state.signedIn && state.accountType === "Brand" && (
         <Card className="panel section-copy">
@@ -254,7 +254,9 @@ function HecxWorkspace() {
             project records · {state.profile.achievements.length} achievements.
           </p>
           <p>
-            Analysis runs on the connected server using the deterministic HECX provider. Results are session-only; refresh clears them.
+            Analysis uses the server-selected AI provider. Relevant supplied
+            context may be sent to Gemini. Results identify the provider and
+            require your review.
           </p>
         </div>
         {!!recent.length && (
@@ -592,7 +594,7 @@ function HecxWorkspace() {
               </Button>
             )}
             <span className="composer-note">
-              Local deterministic analysis · Review before applying
+              Evidence-based suggestions · Review before applying
             </span>
           </div>
         </div>

@@ -156,7 +156,8 @@ export function SecondaryPage({ section }: { section: string }) {
             <Shield className="accent-icon" />
             <h2>Your account</h2>
             <p className="section-copy">
-              Signed in as <strong>{state.profile.name}</strong>. Your session is securely managed by the backend.
+              Signed in as <strong>{state.profile.name}</strong>. Your session
+              is securely managed by the backend.
             </p>
             <div className="row section-copy">
               <Action href="/profile" secondary>
@@ -171,11 +172,11 @@ export function SecondaryPage({ section }: { section: string }) {
             <Sparkles className="accent-icon" />
             <h2>HECX model</h2>
             <p className="section-copy">
-              Scripted demo adapter. No AI provider, API key, or production
-              model is connected.
+              HECX uses the provider configured on the server. Each analysis
+              identifies Gemini or MockHECX. Match scores remain deterministic.
             </p>
             <div className="section-copy">
-              <Badge tone="purple">Demo only</Badge>
+              <Badge tone="purple">Server-managed provider</Badge>
             </div>
           </Card>
           <Card className="panel">
@@ -193,7 +194,8 @@ export function SecondaryPage({ section }: { section: string }) {
             <Clock className="accent-icon" />
             <h2>Saved workspace</h2>
             <p className="section-copy">
-              Your profile, saved creators, drafts, and published portfolio are stored in the connected database. Sign in to access them.
+              Your profile, saved creators, drafts, and published portfolio are
+              stored in the connected database. Sign in to access them.
             </p>
           </Card>
         </div>

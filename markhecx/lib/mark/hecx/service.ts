@@ -26,6 +26,8 @@ export function validateHECXResponse(
   const parsed = responseSchema.safeParse(raw);
   if (!parsed.success) throw new HecxError("invalid");
   const result = parsed.data;
+  if (context.module !== "AI Chat" && result.module !== context.module)
+    throw new HecxError("invalid");
   if (!context.authorized && result.suggestedChanges.length)
     throw new HecxError("invalid");
   for (const change of result.suggestedChanges) {

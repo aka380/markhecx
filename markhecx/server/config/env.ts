@@ -16,7 +16,13 @@ const schema = z.object({
     .string()
     .default("http://127.0.0.1:3001,http://127.0.0.1:3000"),
   SESSION_DAYS: z.coerce.number().int().min(1).max(30).default(7),
-  HECX_PROVIDER: z.enum(["mock"]).default("mock"),
+  GEMINI_API_KEY: z.string().optional(),
+  GEMINI_MODEL: z
+    .string()
+    .regex(/^gemini-[a-zA-Z0-9.-]+$/)
+    .default("gemini-3.5-flash-lite"),
+  HECX_TIMEOUT_MS: z.coerce.number().int().min(1000).max(30000).default(25000),
+  HECX_PROVIDER: z.enum(["mock", "gemini"]).default("mock"),
 });
 export const config = schema.parse(process.env);
 export const origins = config.WEB_ORIGINS.split(",").map(

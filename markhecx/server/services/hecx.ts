@@ -1,3 +1,5 @@
+import { config } from "../config/env";
+import { GeminiProvider } from "../providers/gemini";
 import { buildHECXContext } from "../../lib/mark/hecx/context";
 import { createHECXService } from "../../lib/mark/hecx/service";
 import { MockHECXProvider } from "../../lib/mark/hecx/mock-provider";
@@ -25,29 +27,34 @@ export function backendHECX(provider: AIProvider = MockHECXProvider) {
         : null;
       if (options.creatorId && !candidate)
         throw new ApiError(404, "not_found", "Public creator not found.");
-      return createHECXService(provider, 8000, (state, request) => ({
-        ...buildHECXContext(state, request),
-        publicCreator:
-          candidate && ["AI Chat", "Match Analyzer"].includes(request.module)
-            ? { ...candidate, avatar: undefined }
-            : null,
-      })).analyze(workspace.state, options);
+      return createHECXService(
+        provider,
+        config.HECX_TIMEOUT_MS,
+        (state, request) => ({
+          ...buildHECXContext(state, request),
+          publicCreator:
+            candidate && ["AI Chat", "Match Analyzer"].includes(request.module)
+              ? { ...candidate, avatar: undefined }
+              : null,
+        }),
+      ).analyze(workspace.state, options);
     },
     async field(action: string, source: string) {
-      return createHECXService(provider).suggest(
+      return createHECXService(provider, config.HECX_TIMEOUT_MS).suggest(
         action as Parameters<
           ReturnType<typeof createHECXService>["suggest"]
         >[0],
         source,
       );
     },
-    campaign(user: User, c: Campaign, action: CampaignHECXAction) {
+    async campaign(user: User, c: Campaign, action: CampaignHECXAction) {
       if (user.role !== "Brand" || c.brandId !== user._id)
         throw new ApiError(
           403,
           "forbidden",
           "Analyze your own brand campaign.",
         );
+      if (provider.campaign) return provider.campaign(action, c);
       return suggestCampaign(action, c);
     },
     async allMatches(user: User) {
@@ -87,4 +94,12 @@ export function backendHECX(provider: AIProvider = MockHECXProvider) {
     },
   };
 }
-export const hecxBackend = backendHECX();
+export const configuredProvider =
+  config.HECX_PROVIDER === "gemini"
+    ? new GeminiProvider({
+        apiKey: config.GEMINI_API_KEY,
+        model: config.GEMINI_MODEL,
+        timeoutMs: config.HECX_TIMEOUT_MS,
+      })
+    : MockHECXProvider;
+export const hecxBackend = backendHECX(configuredProvider);

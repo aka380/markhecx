@@ -77,11 +77,13 @@ Canonical prefix `/api/v1`; `/api` is a compatibility alias.
 
 ## HECX and evidence
 
-The browser calls the authenticated HECX API. Server services load the actual account/publication/campaign context, invoke the `AIProvider` abstraction, and validate structured responses. The configured provider is **MockHECX**, a deterministic analysis provider; no external generative model is connected or claimed.
+The browser calls the authenticated HECX API. Server services load the actual account/publication/campaign context, invoke the `AIProvider` abstraction, and validate structured responses. `HECX_PROVIDER=gemini` selects the server-only Google Gen AI adapter; `HECX_PROVIDER=mock` explicitly selects deterministic local analysis. Real-provider failures never fall back silently. Results identify their provider.
 
 Campaign matching remains deterministic and separate from explanation generation. Scores use only known factors, expose factor weights/alignment/evidence and unknown-data coverage, and do not predict outcomes. Suggestions preserve Analyze → Suggest → Review → Accept/Edit/Reject → Apply. Publishing remains a separate explicit action.
 
-An external provider can be injected in `server/services/hecx.ts`. Add its server-only credentials, provider provenance/schema support, and contract tests there; never put keys in `NEXT_PUBLIC_*` or UI code.
+Configure `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-3.5-flash-lite`) and `HECX_TIMEOUT_MS` (default 25000) in ignored `server/.env`, then restart the backend. Never put credentials in `NEXT_PUBLIC_*` or UI code. `server/providers/gemini.ts` is the replaceable SDK boundary behind `AIProvider`. It uses [Google structured output](https://ai.google.dev/gemini-api/docs/generate-content/structured-output?hl=en), Zod validation, exact evidence-quote checks, unsupported-number checks, bounded timeouts and safe errors. Domain analysis owns facts, gaps and allowed mutation targets; Gemini supplies qualitative advice and selects existing proposals. Free-text advice still requires user review: these checks cannot prove every semantic claim.
+
+All ten HECX modules and existing field/campaign assistance use this provider. Matching endpoints retain deterministic scores. No provider writes to MongoDB. Only scoped context is sent; unrelated drafts and credentials are excluded. Normal tests force mock mode. `npm run test:gemini:live` is an opt-in real request returning only a validated status, with no profile records sent.
 
 ## Security and operational boundaries
 

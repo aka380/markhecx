@@ -29,7 +29,9 @@ export async function api<T>(
   } = {},
 ): Promise<T> {
   const method = options.method || "GET";
-  const timeout = AbortSignal.timeout(20000);
+  const timeout = AbortSignal.timeout(
+    path.startsWith("/hecx/") ? 35000 : 20000,
+  );
   const signal = options.signal
     ? AbortSignal.any([options.signal, timeout])
     : timeout;

@@ -23,7 +23,7 @@ export const information: Record<
       },
       {
         title: "Clarity with HECX",
-        body: "HECX is designed to help creators reflect on their strengths, projects, and next steps. The current workspace demonstrates those interactions with clearly labeled scripted responses.",
+        body: "HECX is designed to help creators reflect on their strengths, projects, and next steps. Analysis identifies its configured provider and presents suggestions for your review.",
       },
       {
         title: "An early chapter",
@@ -50,7 +50,7 @@ export const information: Record<
       },
       {
         title: "Understand the platform",
-        body: "Discovery shows published creator profiles. Accounts, messages, notifications, and portfolios use the connected backend. Sample showcases are labeled separately. Payments and external generative AI are not connected.",
+        body: "Discovery shows published creator profiles. Accounts, messages, notifications, and portfolios use the connected backend. Sample showcases are labeled separately. Payments are not connected. AI suggestions require review before applying.",
       },
     ],
   },
@@ -73,7 +73,7 @@ export const information: Record<
       },
       {
         title: "Is HECX connected to AI?",
-        body: "HECX runs on the backend using deterministic analysis and explainable matching. The provider abstraction supports future external AI integration; no external generative model is currently connected.",
+        body: "HECX runs on the backend with configurable Gemini analysis and deterministic, explainable matching. Each analysis identifies its provider; proposed changes require your review.",
       },
       {
         title: "Where is my data saved?",

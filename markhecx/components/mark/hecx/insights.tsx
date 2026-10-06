@@ -61,7 +61,10 @@ export function HecxInsights({ result }: { result: HecxResult }) {
       </div>
       <h2>{result.summary}</h2>
       <p className="small-note">
-        {result.provider}. No external AI request was made.
+        {result.provider}.{" "}
+        {result.provider.startsWith("Gemini")
+          ? "AI recommendations require your review; supplied evidence is not independently verified."
+          : "No external AI request was made."}
       </p>
       {result.requiresUserInput.length > 0 && (
         <Card className="panel hecx-needs">

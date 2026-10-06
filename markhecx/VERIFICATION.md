@@ -47,6 +47,17 @@ Local browser access was previously rejected by the browser tool. No alternate b
 
 The existing CSS/design tokens, reduced-motion rules, breakpoints, bounded dialogs and mobile filter structures were preserved. Source/render tests verify structure, not measured layout or overflow. These browser checks remain the final manual acceptance step.
 
-The active HECX provider is explicitly **MockHECX**, running deterministic analysis on the backend. No external generative model/key is configured. External model integration, email verification/recovery, real-time push, production hosting/TLS, backups/monitoring, object storage and large-dataset pagination remain deployment-specific follow-up work. No fabricated metrics or model results are presented as real.
+The active local HECX provider is **Gemini**, configured through ignored server environment variables. Email verification/recovery, real-time push, production hosting/TLS, backups/monitoring, object storage and large-dataset pagination remain deployment-specific follow-up work. No fabricated metrics or model results are presented as real.
 
 Previous Phase 5 verification is archived at [docs/PHASE_5_VERIFICATION.md](docs/PHASE_5_VERIFICATION.md).
+
+## Gemini integration verification
+
+- 18 backend tests passed, including eight Gemini contract/security/error tests; existing Phase 1–5 regression suite passed. Normal tests use injected SDK responses and make no Gemini requests.
+- Frontend and backend TypeScript checks and production builds passed. ESLint has no errors and retains five existing native-image warnings.
+- Real Gemini structured status smoke returned `OK`; no profile records were sent.
+- Structured output, exact evidence quotes, unsupported numbers, allowed mutation IDs, all ten modules, missing keys, invalid credentials, rate limits, malformed responses, deadlines and account isolation covered.
+- Existing browser verification limitations above still apply. Review is required for generated prose; validation does not establish semantic truth.
+- Authenticated HECX → Gemini → validated API response returned HTTP 200 using a disposable test account in the isolated test database; account/session/workspace were removed afterward.
+- Configured key absent from tracked files and built client assets; server environment is ignored and mode 600.
+- Production HTTP verification passed: 44 routes, 44 assets, unknown-route 404, healthy database/API, unauthenticated workspace 401 and public API CORS.

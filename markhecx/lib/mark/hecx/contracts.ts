@@ -102,11 +102,18 @@ export const responseSchema = z
       "Insufficient data",
     ]),
     requiresUserInput: list,
-    provider: z.literal("MockHECX · Local deterministic analysis"),
+    provider: z.enum([
+      "MockHECX · Local deterministic analysis",
+      "Gemini · Evidence-grounded analysis",
+    ]),
   })
   .strict();
 export type HecxResult = z.infer<typeof responseSchema>;
 export interface AIProvider {
+  campaign?(
+    action: string,
+    campaign: import("../marketplace/models").Campaign,
+  ): Promise<import("../assistance").Suggestion>;
   analyze(context: HecxContext, signal?: AbortSignal): Promise<unknown>;
   suggest(
     action: string,
@@ -115,6 +122,8 @@ export interface AIProvider {
   ): Promise<unknown>;
 }
 export type HecxErrorCode =
+  | "configuration"
+  | "model_unavailable"
   | "unavailable"
   | "timeout"
   | "invalid"
@@ -129,6 +138,10 @@ export class HecxError extends Error {
 export const errorMessage = (error: unknown) =>
   error instanceof HecxError
     ? {
+        configuration:
+          "HECX AI credentials are missing or were rejected. Check the server configuration.",
+        model_unavailable:
+          "The configured HECX model is unavailable. Check the server model setting.",
         unavailable: "HECX couldn’t complete this analysis. Please try again.",
         timeout:
           "This analysis took too long. Try again with a smaller selection.",

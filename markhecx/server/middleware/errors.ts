@@ -1,3 +1,4 @@
+import { HecxError, errorMessage } from "../../lib/mark/hecx/contracts";
 import type { ErrorRequestHandler, RequestHandler } from "express";
 import { ZodError } from "zod";
 export class ApiError extends Error {
@@ -12,6 +13,12 @@ export class ApiError extends Error {
 export const notFound: RequestHandler = (_req, _res, next) =>
   next(new ApiError(404, "not_found", "This API route does not exist."));
 export const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {
+  if (error instanceof HecxError)
+    error = new ApiError(
+      error.code === "timeout" ? 504 : error.code === "rate_limit" ? 429 : 503,
+      error.code,
+      errorMessage(error),
+    );
   void _next; // Express requires four arguments to recognize error middleware.
   const status =
     error instanceof ApiError
