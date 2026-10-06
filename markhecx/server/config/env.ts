@@ -14,7 +14,9 @@ const schema = z.object({
     .default("markhecx"),
   WEB_ORIGINS: z
     .string()
-    .default("http://127.0.0.1:3001,http://127.0.0.1:3000"),
+    .default(
+      "http://127.0.0.1:3001,http://127.0.0.1:3000,http://127.0.0.1:5173",
+    ),
   GOOGLE_CLIENT_ID: z.string().optional(),
   EMAIL_PROVIDER: z.enum(["disabled", "resend"]).default("disabled"),
   RESEND_API_KEY: z.string().optional(),
