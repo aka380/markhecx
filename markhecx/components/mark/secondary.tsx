@@ -1,4 +1,5 @@
 "use client";
+import { HecxPreferences } from "./hecx/preferences";
 import { useState } from "react";
 import {
   Clock,
@@ -152,6 +153,7 @@ export function SecondaryPage({ section }: { section: string }) {
           description="A clear view of what’s connected—and what’s still to come."
         />
         <div className="settings-grid">
+          <HecxPreferences />
           <Card className="panel">
             <Shield className="accent-icon" />
             <h2>Your account</h2>

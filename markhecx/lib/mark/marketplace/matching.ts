@@ -17,6 +17,7 @@ export function ownerCreator(
     id: "local",
     source: "local",
     name: s.profile.name,
+    creative: s.profile.creative,
     username: s.profile.username,
     identity: s.profile.identity,
     bio: s.profile.bio,
@@ -159,13 +160,54 @@ export function scoreCreator(
         ? `Listed: ${c.availability}. Requested: ${r.availability}; confirm actual dates.`
         : "Availability not provided.",
     );
+  for (const [key, label, wanted, actual] of [
+    ["tools", "Tool fit", campaign.tools || [], c.creative?.tools || []],
+    [
+      "contentType",
+      "Content type fit",
+      campaign.contentType ? [campaign.contentType] : [],
+      c.creative?.contentTypes || [],
+    ],
+    [
+      "format",
+      "Format fit",
+      campaign.format ? [campaign.format] : [],
+      c.creative?.formats || [],
+    ],
+  ] as [string, string, string[], string[]][])
+    if (wanted.length) {
+      const found = overlap(wanted, actual);
+      add(
+        key,
+        label,
+        10,
+        actual.length ? found.length / wanted.length : null,
+        `Requested: ${wanted.join(", ")}. Self-declared: ${actual.join(", ") || "Evidence unavailable"}.`,
+      );
+    }
+  if (campaign.commercialUse && campaign.commercialUse !== "Unspecified")
+    add(
+      "commercial",
+      "Commercial use",
+      10,
+      c.creative?.commercialUse && c.creative.commercialUse !== "Unspecified"
+        ? Number(c.creative.commercialUse === campaign.commercialUse)
+        : null,
+      `Requested: ${campaign.commercialUse}. Self-declared: ${c.creative?.commercialUse || "Evidence unavailable"}; confirm licensing directly.`,
+    );
   if (campaign.budget !== null)
     add(
       "budget",
       "Budget fit",
       5,
-      null,
-      "Creator rates are unavailable; budget compatibility cannot be calculated.",
+      c.creative?.minimumBudget != null &&
+        c.creative.currency === campaign.currency
+        ? Number(campaign.budget >= c.creative.minimumBudget)
+        : null,
+      c.creative?.minimumBudget != null &&
+        c.creative.currency === campaign.currency
+        ? `Self-declared minimum: ${c.creative.minimumBudget} ${c.creative.currency}; campaign budget: ${campaign.budget}. Confirm terms directly.`
+        : "Creator rates are unavailable or use a different currency; budget compatibility cannot be calculated.",
     );
   if (campaign.targetAudience)
     add(
@@ -180,8 +222,13 @@ export function scoreCreator(
       "platform",
       "Platform fit",
       5,
-      null,
-      "Creator platform capability is not recorded; confirm directly.",
+      c.creative?.platforms.length
+        ? overlap(campaign.platforms, c.creative.platforms).length /
+            campaign.platforms.length
+        : null,
+      c.creative?.platforms.length
+        ? `Self-declared platforms: ${c.creative.platforms.join(", ")}.`
+        : "Creator platform capability is not recorded; confirm directly.",
     );
   const known = f.filter((x) => x.value !== null),
     denominator = known.reduce((sum, x) => sum + x.weight, 0),

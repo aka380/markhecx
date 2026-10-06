@@ -601,6 +601,11 @@ export function CampaignDetail({ id }: { id: string }) {
             <p className="profile-bio">{c.brief}</p>
             {[
               ["Objective", c.objective],
+              ["Content type", c.contentType],
+              ["Format", c.format],
+              ["Aspect ratio", c.aspectRatio],
+              ["Required tools", c.tools?.join(", ")],
+              ["Commercial use", c.commercialUse],
               ["Problem", c.problem],
               ["Desired outcome", c.outcome],
               ["Target audience", c.targetAudience],
@@ -1245,8 +1250,8 @@ function Matches({ id }: { id: string }) {
         />
       </div>
       <p className="small-note">
-        Budget, audience, platform and recent-activity filters are unavailable
-        because the creator dataset does not contain those measurements.
+        Audience and recent-activity filters are unavailable because the creator
+        dataset does not contain those measurements.
       </p>
     </>
   );

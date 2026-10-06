@@ -1,3 +1,4 @@
+import { creativeSchema } from "./creative";
 import { z } from "zod";
 import {
   blankPortfolio,
@@ -24,6 +25,7 @@ const recordBase = {
   description: z.string().optional(),
 };
 export const profileSchema = z.object({
+  creative: creativeSchema.optional(),
   name: z.string(),
   username: z.string(),
   identity: z.string(),
@@ -116,6 +118,7 @@ export const portfolioSchema = z.object({
   savedAt: z.string().nullable(),
 });
 export const projectSchema = z.object({
+  creative: creativeSchema.optional(),
   id: z.string(),
   ownerId: z.string(),
   title: z.string(),

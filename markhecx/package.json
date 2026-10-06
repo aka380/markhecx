@@ -17,8 +17,9 @@
     "backend:start": "node --env-file-if-exists=server/.env server/dist/index.mjs",
     "test:regression": "node scripts/test-regression.mjs",
     "test:backend": "HECX_PROVIDER=mock NODE_ENV=test MONGODB_DATABASE=markhecx_test node --import tsx --test --test-concurrency=1 server/tests/*.test.ts",
-    "backend:mongo:init": "node scripts/init-local-mongo.mjs",
-    "test:gemini:live": "node --env-file=server/.env --import tsx scripts/smoke-gemini.ts"
+    "backend:mongo:init": "node scripts/init-local-mongo.mjs && node --env-file-if-exists=server/.env --import tsx scripts/init-backend.ts",
+    "test:gemini:live": "node --env-file=server/.env --import tsx scripts/smoke-gemini.ts",
+    "test:full-stack:live": "HECX_PROVIDER=gemini NODE_ENV=test MONGODB_DATABASE=markhecx_test node --env-file=server/.env --import tsx scripts/smoke-full-stack.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

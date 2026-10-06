@@ -84,6 +84,7 @@ export function discoveryCreators(publication: Publication | null): Creator[] {
       id: "local",
       source: "local",
       name: p.name,
+      creative: p.creative,
       username: p.username,
       avatar: p.avatar,
       identity: p.identity,

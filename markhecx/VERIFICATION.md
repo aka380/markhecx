@@ -61,3 +61,18 @@ Previous Phase 5 verification is archived at [docs/PHASE_5_VERIFICATION.md](docs
 - Authenticated HECX → Gemini → validated API response returned HTTP 200 using a disposable test account in the isolated test database; account/session/workspace were removed afterward.
 - Configured key absent from tracked files and built client assets; server environment is ignored and mode 600.
 - Production HTTP verification passed: 44 routes, 44 assets, unknown-route 404, healthy database/API, unauthenticated workspace 401 and public API CORS.
+
+
+## Full-stack completion pass — 2026-10-07
+
+- **108 automated tests passed**: 22 backend integration/provider tests plus 86 Phase 1–5 domain/render regression tests. Tests use the dedicated MongoDB replica-set test database, mocked Gemini, and captured email.
+- Both TypeScript checks and both production builds passed. ESLint: zero errors, five existing native-image warnings. No design token/animation stylesheet changes.
+- Real `test:full-stack:live` passed through the frontend HTTP client, Express authentication, MongoDB, real Gemini and validated responses: persisted fictional creator/project/publication → filtered discovery → profile analysis → campaign persistence → structured brief proposal → deterministic match + Gemini explanation. AI requests did not silently save campaign changes.
+- That same flow verified forgot password → captured email OTP → verification → password reset → login with the new password. Separate security tests verify cooldown, attempt limits, expired OTP/token rejection, single use, old-session revocation and cross-account boundaries.
+- Actual outbound email delivery is **not configured or verified**. Missing provider credentials return `503 email_unavailable` consistently. Configure a verified Resend sender and server-only key; recovery must not be represented as delivered until that external setup is done.
+- Replica-set initialization plus all collection indexes succeeded. New reset/memory collections are isolated by account; application/test environment separation is enforced.
+- API and frontend restarted on their existing ports. Final HTTP checks: 44 routes, 46 assets, unknown-route 404, database health, public API CORS and protected-resource 401.
+- Secret scan: configured keys absent from tracked source and browser bundles. Server environment remains gitignored with mode 600. No secret/provider raw response is included in logs or this report.
+- Browser clicking/typing, hydrated console inspection and desktop/tablet/mobile visual QA remain unverified because browser access was previously blocked. HTTP transport and server markup checks are not browser end-to-end acceptance.
+
+See [FULL_STACK_AUDIT.md](docs/FULL_STACK_AUDIT.md) for changed subsystems, database fields/indexes, endpoints, configuration, evidence boundaries and scale limits. No external deployment or Git push was performed.

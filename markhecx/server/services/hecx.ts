@@ -1,3 +1,9 @@
+import { memories } from "../models/memory";
+import { emptyState } from "../../lib/mark/store";
+import { HecxError } from "../../lib/mark/hecx/contracts";
+import { campaigns } from "../models/marketplace";
+import { creatorDocuments } from "../models/creators";
+import { publicCreator } from "./creators";
 import { config } from "../config/env";
 import { GeminiProvider } from "../providers/gemini";
 import { buildHECXContext } from "../../lib/mark/hecx/context";
@@ -20,8 +26,75 @@ import type { Campaign } from "../../lib/mark/marketplace/models";
 /** Inject a server-only provider here. No client decides the provider, keys, or trusted owner context. */
 export function backendHECX(provider: AIProvider = MockHECXProvider) {
   return {
+    async brief(user: User, prompt: string) {
+      if (user.role !== "Brand")
+        throw new ApiError(403, "forbidden", "A Brand account is required.");
+      if (!provider.brief) throw new HecxError("unavailable");
+      return {
+        draft: await provider.brief(prompt),
+        provider: config.HECX_PROVIDER,
+        requiresReview: true,
+      };
+    },
+    async explainMatch(user: User, campaignId: string, creatorId: string) {
+      const campaign = (await campaigns.findOne({ _id: campaignId }))?.data;
+      if (
+        !campaign ||
+        (user.role === "Brand"
+          ? campaign.brandId !== user._id
+          : creatorId !== user._id ||
+            !["Published", "Active", "Paused", "Completed"].includes(
+              campaign.status,
+            ))
+      )
+        throw new ApiError(404, "not_found", "Match unavailable.");
+      const doc = await creatorDocuments.findOne({
+        _id: creatorId,
+        "state.publication.portfolio.visibility": "Public",
+      });
+      const creator =
+        user.role === "Creator"
+          ? {
+              ...ownerCreator((await creatorWorkspace(user)).state),
+              id: user._id,
+            }
+          : doc
+            ? publicCreator(doc)
+            : null;
+      if (!creator)
+        throw new ApiError(404, "not_found", "Creator evidence unavailable.");
+      const match = matchingService.matchCreatorsToCampaign(campaign, [
+        creator,
+      ])[0];
+      const context = buildHECXContext(
+        { ...structuredClone(emptyState), signedIn: true },
+        {
+          module: "Match Analyzer",
+          message:
+            "Explain the deterministic match using only supplied evidence. Do not generate a score.",
+        },
+      );
+      context.profile = null;
+      context.projects = [];
+      context.portfolio = null;
+      context.publicCreator = { ...creator, avatar: undefined };
+      context.campaign = {
+        name: campaign.title,
+        requiredSkills: campaign.requirements.requiredSkills,
+        identity: campaign.requirements.creatorIdentity,
+        audience: campaign.targetAudience,
+        budget: campaign.budget ?? undefined,
+      };
+      context.deterministicMatch = match;
+      return { match, analysis: await provider.analyze(context) };
+    },
     async analyze(user: User, options: HecxOptions) {
       const workspace = await creatorWorkspace(user);
+      const preferences = await memories
+        .find({ userId: user._id })
+        .project({ key: 1, value: 1, _id: 0 })
+        .limit(3)
+        .toArray();
       const candidate = options.creatorId
         ? (await listCreators()).find((c) => c?.id === options.creatorId)
         : null;
@@ -32,6 +105,7 @@ export function backendHECX(provider: AIProvider = MockHECXProvider) {
         config.HECX_TIMEOUT_MS,
         (state, request) => ({
           ...buildHECXContext(state, request),
+          preferences: preferences.map((p) => ({ key: p.key, value: p.value })),
           publicCreator:
             candidate && ["AI Chat", "Match Analyzer"].includes(request.module)
               ? { ...candidate, avatar: undefined }

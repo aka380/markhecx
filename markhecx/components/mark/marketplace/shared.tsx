@@ -1,4 +1,7 @@
 "use client";
+import { api } from "@/lib/mark/api/client";
+import type { HecxResult } from "@/lib/mark/hecx/contracts";
+import { HecxInsights } from "../hecx/insights";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Card, Badge, Button, Action, EmptyState, Textarea } from "../ui";
@@ -85,6 +88,14 @@ export function CampaignCard({
   );
 }
 export function MatchAnalysis({ match: m }: { match: CreatorMatch }) {
+  const [analysis, setAnalysis] = useState<{
+      key: string;
+      result: HecxResult;
+    } | null>(null),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const key = m.campaignId + ":" + m.creatorId;
+
   return (
     <div className="match-analysis">
       <Badge tone="purple">HECX · Explainable matching</Badge>
@@ -92,6 +103,32 @@ export function MatchAnalysis({ match: m }: { match: CreatorMatch }) {
         {m.score === null ? "Not enough data" : `${m.score}% match`}
       </h3>
       <p>{m.explanation}</p>
+      <Button
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          setError("");
+          try {
+            const r = await api<{ analysis: HecxResult }>(
+              "/hecx/match-explanation",
+              {
+                method: "POST",
+                body: { campaignId: m.campaignId, creatorId: m.creatorId },
+              },
+            );
+            setAnalysis({ key, result: r.analysis });
+          } catch (e) {
+            setError((e as Error).message);
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        {busy ? "HECX is analyzing…" : "Explain with HECX"}
+      </Button>
+      {error && <p role="alert">{error}</p>}
+      {analysis?.key === key && <HecxInsights result={analysis.result} />}
+
       <p className="small-note">
         Score = sum of (factor alignment × weight) ÷ known-factor weights.
         Unknown factors are excluded, never assumed positive. Evidence coverage:{" "}

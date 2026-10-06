@@ -45,7 +45,7 @@ export function PremiumPage() {
           <span className="eyebrow">YOUR FOUNDATION</span>
           <h2>Creator</h2>
           <div className="plan-price">
-            Free<span>Local demo</span>
+            Free<span>Current workspace</span>
           </div>
           <p>Start shaping your creative identity.</p>
           <ul>

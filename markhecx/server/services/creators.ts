@@ -18,7 +18,14 @@ export async function creatorWorkspace(user: User) {
   initial.portfolio.ownerId = user._id;
   await creatorDocuments.updateOne(
     { _id: user._id },
-    { $setOnInsert: { revision: 0, state: initial, updatedAt: new Date() } },
+    {
+      $setOnInsert: {
+        revision: 0,
+        state: initial,
+        createdAt: user.createdAt,
+        updatedAt: new Date(),
+      },
+    },
     { upsert: true },
   );
   return (await creatorDocuments.findOne({ _id: user._id }))!;
@@ -115,7 +122,14 @@ export function publicCreator(doc: CreatorDocument) {
   const c = discoveryCreators(doc.state.publication).find(
     (c) => c.source === "local",
   );
-  return c ? { ...c, id: doc._id, source: "local" as const } : null;
+  return c
+    ? {
+        ...c,
+        id: doc._id,
+        joinedAt: doc.createdAt?.toISOString(),
+        source: "local" as const,
+      }
+    : null;
 }
 export async function listCreators() {
   const docs = await creatorDocuments

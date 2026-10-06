@@ -273,6 +273,7 @@ export async function marketCommand(user: User, raw: unknown) {
               name: creator.name,
               username: creator.username,
               identity: creator.identity,
+              creative: creator.creative,
               skills: creator.skills,
               category: creator.category,
               categories: creator.categories || [],

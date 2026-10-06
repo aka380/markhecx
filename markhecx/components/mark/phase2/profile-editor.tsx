@@ -1,4 +1,5 @@
 "use client";
+import { CreativeFields } from "./creative-fields";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -198,6 +199,10 @@ function ProfileEditorForm({ initial }: { initial: CreatorProfile }) {
               </div>
             </TabsContent>
             <TabsContent value="Skills">
+              <CreativeFields
+                value={draft.creative}
+                onChange={(v) => field("creative", v)}
+              />
               <SkillEditor
                 skills={draft.skills}
                 onChange={(v) => field("skills", v)}

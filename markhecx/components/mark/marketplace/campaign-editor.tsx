@@ -1,4 +1,5 @@
 "use client";
+import { BriefBuilder } from "./brief-builder";
 import { api } from "@/lib/mark/api/client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -206,6 +207,44 @@ function Editor({ id }: { id?: string }) {
       <div className="campaign-editor-grid">
         <Card className="panel">
           <h2>{steps[step]}</h2>
+          {step === 1 && (
+            <BriefBuilder
+              onAccept={(v) =>
+                patch({
+                  contentType: v.contentType,
+                  creativeDirection: v.style,
+                  platforms: v.platform ? [v.platform] : [],
+                  format: v.format,
+                  aspectRatio: v.aspectRatio,
+                  commercialUse: v.commercialUse,
+                  brief: v.requirements.join("\n"),
+                })
+              }
+            />
+          )}
+          {step === 4 && (
+            <div className="form-grid">
+              {field("contentType", "Content type")}
+              {field("format", "Format")}
+              {field("aspectRatio", "Aspect ratio")}
+              <label className="field">
+                Required tools
+                <Input
+                  value={(draft.tools || []).join(", ")}
+                  onChange={(e) => patch({ tools: split(e.target.value) })}
+                />
+              </label>
+              <Choice
+                label="Commercial use requirements"
+                value={draft.commercialUse || "Unspecified"}
+                options={["Unspecified", "Available", "Restricted"]}
+                onChange={(v) =>
+                  patch({ commercialUse: v as Campaign["commercialUse"] })
+                }
+              />
+            </div>
+          )}
+
           <div className="form-grid">
             {step === 0 && (
               <>
@@ -489,6 +528,15 @@ function Editor({ id }: { id?: string }) {
                   {draft.category} · {draft.objective}
                 </p>
                 <p>{draft.description}</p>
+                <p>
+                  {[draft.contentType, draft.format, draft.aspectRatio]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+                <p>
+                  Tools: {draft.tools?.join(", ") || "Not specified"}.
+                  Commercial use: {draft.commercialUse || "Unspecified"}.
+                </p>
                 <h4>Brief</h4>
                 <p className="profile-bio">{draft.brief || "Not provided"}</p>
                 {[

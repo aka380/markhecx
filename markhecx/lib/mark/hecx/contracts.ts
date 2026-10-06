@@ -49,6 +49,8 @@ export interface HecxOptions {
 }
 export type ContextProject = Omit<Project, "media"> & { mediaCount: number };
 export interface HecxContext {
+  preferences?: { key: string; value: string }[];
+  deterministicMatch?: import("../marketplace/models").CreatorMatch;
   module: HecxModule;
   message: string;
   authorized: boolean;
@@ -110,6 +112,7 @@ export const responseSchema = z
   .strict();
 export type HecxResult = z.infer<typeof responseSchema>;
 export interface AIProvider {
+  brief?(prompt: string): Promise<import("../creative").BriefDraft>;
   campaign?(
     action: string,
     campaign: import("../marketplace/models").Campaign,

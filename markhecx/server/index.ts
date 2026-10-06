@@ -1,3 +1,4 @@
+import { memoryIndexes } from "./models/memory";
 import { notificationIndexes } from "./models/notifications";
 import { marketIndexes } from "./models/marketplace";
 import { creatorIndexes } from "./models/creators";
@@ -7,6 +8,7 @@ import { connectDatabase, client } from "./models/database";
 import { config } from "./config/env";
 await connectDatabase();
 await authIndexes();
+await memoryIndexes();
 await creatorIndexes();
 await marketIndexes();
 await notificationIndexes();

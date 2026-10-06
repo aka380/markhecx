@@ -52,6 +52,10 @@ test("Gemini uses configured server SDK transport, structured output, and explic
     assert.equal(r.model, "gemini-test");
     assert.equal(r.config?.responseMimeType, "application/json");
     assert.ok(r.config?.responseJsonSchema);
+    const schema = r.config?.responseJsonSchema as {
+      properties: { evidenceQuotes: { items: { enum?: string[] } } };
+    };
+    assert.ok((schema.properties.evidenceQuotes.items.enum?.length || 0) <= 20);
     assert.ok(r.config?.abortSignal);
     assert.ok(!JSON.stringify(r).includes(options.apiKey));
   }).analyze(context());

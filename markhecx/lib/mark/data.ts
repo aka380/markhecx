@@ -1,5 +1,7 @@
+import type { CreativeCapabilities } from "./creative";
 import { searchCreatorPool } from "./creator-search";
 export type Creator = {
+  creative?: CreativeCapabilities;
   avatar?: string;
   source?: "sample" | "local";
   availability?: "Available" | "Open to Opportunities" | "Not specified";

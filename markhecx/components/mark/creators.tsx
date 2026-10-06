@@ -19,11 +19,21 @@ import {
   creatorCategories,
 } from "@/lib/mark/discovery";
 import { useApp, SignInGate } from "./provider";
-import { PageTitle, Badge, Choice, EmptyState, Button, Action } from "./ui";
+import {
+  PageTitle,
+  Badge,
+  Choice,
+  EmptyState,
+  Button,
+  Action,
+  Input,
+} from "./ui";
 import { CreatorCard } from "./creator-card";
 import { CreatorSearch } from "./discovery/creator-search";
 import { DiscoveryFilters } from "./discovery/filters";
 import { CreatorGridSkeleton } from "./discovery/loading";
+import { useAPIResource } from "./api-resource";
+import type { Creator } from "@/lib/mark/data";
 import { useDiscoveryResource } from "./discovery/use-discovery";
 import { PublicCreatorProfile } from "./phase2/public-creator";
 
@@ -31,7 +41,11 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
   const params = useSearchParams(),
     router = useRouter();
   const { state, ready } = useApp();
-  const discovery = useDiscoveryResource();
+  const discovery = useDiscoveryResource(
+    savedRoute || params.get("view") === "Saved"
+      ? undefined
+      : params.toString(),
+  );
   const pool = useMemo(() => discovery.data?.creators || [], [discovery.data]);
   const [filtersOpen, setFiltersOpen] = useState(false),
     [desktopFilters, setDesktopFilters] = useState(false),
@@ -40,7 +54,11 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
   const query = useMemo(
     () =>
       readDiscoveryQuery(
-        new URLSearchParams(params.toString()),
+        new URLSearchParams(
+          params.get("view")
+            ? params.toString()
+            : params.toString() + "&view=All%20Creators",
+        ),
         state.signedIn,
         savedRoute,
       ),
@@ -49,6 +67,7 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
   function navigate(patch: Record<string, string | string[]>) {
     const current = new URLSearchParams(params.toString());
     if (savedRoute) current.set("view", "Saved");
+    if (!patch.page) current.delete("page");
     startTransition(() =>
       router.replace("/creators?" + updateDiscoveryQuery(current, patch), {
         scroll: false,
@@ -91,6 +110,11 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
       experience: "",
       projects: "",
       portfolio: "",
+      tool: "",
+      specialization: "",
+      contentType: "",
+      platform: "",
+      format: "",
     });
   const activeFilters = [
     ...[
@@ -300,7 +324,7 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
       )}
       {query.view === "New Creators" && (
         <p className="info-line">
-          Newest dated sample profiles. Creators without a recorded join date
+          Newest dated creator profiles. Creators without a recorded join date
           are omitted.
         </p>
       )}
@@ -311,6 +335,50 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
           card’s explanation to see the evidence.
         </p>
       )}
+      <div className="form-grid">
+        {[
+          ["tool", "Tool"],
+          ["specialization", "Specialization"],
+          ["contentType", "Content type"],
+          ["platform", "Platform"],
+          ["format", "Format"],
+        ].map(([key, label]) => (
+          <label className="field" key={key}>
+            {label}
+            <Input
+              aria-label={label}
+              value={params.get(key) || ""}
+              maxLength={100}
+              onChange={(e) => navigate({ [key]: e.target.value })}
+            />
+          </label>
+        ))}
+        {!!discovery.data?.pages && discovery.data.pages > 1 && (
+          <div>
+            <Button
+              disabled={(discovery.data.page || 1) <= 1}
+              onClick={() =>
+                navigate({ page: String((discovery.data?.page || 1) - 1) })
+              }
+            >
+              Previous
+            </Button>
+            <span>
+              {" "}
+              Page {discovery.data.page} of {discovery.data.pages} ·{" "}
+              {discovery.data.total} creators{" "}
+            </span>
+            <Button
+              disabled={(discovery.data.page || 1) >= discovery.data.pages}
+              onClick={() =>
+                navigate({ page: String((discovery.data?.page || 1) + 1) })
+              }
+            >
+              Next
+            </Button>
+          </div>
+        )}
+      </div>
       {discovery.error ? (
         <EmptyState title="Discovery unavailable" description={discovery.error}>
           <Button onClick={discovery.retry}>Retry</Button>
@@ -409,6 +477,11 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
                         experience: "",
                         projects: "",
                         portfolio: "",
+                        tool: "",
+                        specialization: "",
+                        contentType: "",
+                        platform: "",
+                        format: "",
                       })
                     }
                   >
@@ -429,9 +502,11 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
 }
 /** Retain existing Phase 1 links while using the shared Phase 2 public profile. */
 export function CreatorProfile({ id }: { id: string }) {
-  const discovery = useDiscoveryResource();
   const sample = creators.find((c) => c.id === id);
-  const c = discovery.data?.creators.find((c) => c.id === id) || sample;
+  const discovery = useAPIResource<{ creator: Creator }>(
+    !sample && id !== "local" ? "/creators/" + encodeURIComponent(id) : null,
+  );
+  const c = discovery.data?.creator || sample;
   if (!sample && id !== "local" && discovery.loading)
     return <CreatorGridSkeleton />;
   return (

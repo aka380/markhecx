@@ -22,6 +22,26 @@ export function PublicProjectDialog({
         </DialogDescription>
         {project && (
           <div className="stack">
+            {project.creative && (
+              <section>
+                <h3>Creative workflow</h3>
+                <p>Self-declared evidence; not independently verified.</p>
+                <p>{project.creative.specialization}</p>
+                <p>
+                  Tools:{" "}
+                  {project.creative.tools.join(", ") || "Evidence unavailable."}
+                </p>
+                <p>
+                  Models:{" "}
+                  {project.creative.models.join(", ") ||
+                    "Evidence unavailable."}
+                </p>
+                <p>{project.creative.workflow}</p>
+                <p>Formats: {project.creative.formats.join(", ")}</p>
+                <p>Commercial use: {project.creative.commercialUse}</p>
+              </section>
+            )}
+
             {project.media
               .filter((m) => m.type === "image")
               .map((m) => (

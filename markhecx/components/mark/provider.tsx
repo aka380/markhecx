@@ -1,4 +1,5 @@
 "use client";
+import { PasswordReset } from "./password-reset";
 import {
   createContext,
   useCallback,
@@ -251,97 +252,113 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           <DialogDescription>
             Sign in to access your saved workspace across devices.
           </DialogDescription>
-          <form
-            className="form-grid"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              if (busy) return;
-              setBusy(true);
-              try {
-                const session = await api<{
-                  user: SessionUser;
-                  csrfToken: string;
-                }>(auth === "Sign Up" ? "/auth/register" : "/auth/login", {
-                  method: "POST",
-                  quiet: true,
-                  body:
-                    auth === "Sign Up"
-                      ? { name, role, email, password }
-                      : { email, password },
-                });
-                await load(session);
-                setPassword("");
-                setAuth("");
-                router.push(session.user.role === "Brand" ? "/brand" : "/");
-              } catch (e) {
-                toast.error((e as Error).message);
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            {auth === "Sign Up" && (
-              <>
-                <label className="field">
-                  Account type
-                  <Choice
-                    label="Account type"
-                    value={role}
-                    options={["Creator", "Brand"]}
-                    onChange={(v) => setRole(v as "Creator" | "Brand")}
-                  />
-                </label>
-                <label className="field">
-                  Your display name
-                  <Input
-                    required
-                    maxLength={60}
-                    autoComplete="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </label>
-              </>
-            )}
-            <label className="field">
-              Email
-              <Input
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </label>
-            <label className="field">
-              Password
-              <Input
-                type="password"
-                required
-                minLength={12}
-                maxLength={128}
-                autoComplete={
-                  auth === "Sign Up" ? "new-password" : "current-password"
+          {auth === "Reset" ? (
+            <PasswordReset onBack={() => setAuth("Sign In")} />
+          ) : (
+            <form
+              className="form-grid"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (busy) return;
+                setBusy(true);
+                try {
+                  const session = await api<{
+                    user: SessionUser;
+                    csrfToken: string;
+                  }>(auth === "Sign Up" ? "/auth/register" : "/auth/login", {
+                    method: "POST",
+                    quiet: true,
+                    body:
+                      auth === "Sign Up"
+                        ? { name, role, email, password }
+                        : { email, password },
+                  });
+                  await load(session);
+                  setPassword("");
+                  setAuth("");
+                  router.push(session.user.role === "Brand" ? "/brand" : "/");
+                } catch (e) {
+                  toast.error((e as Error).message);
+                } finally {
+                  setBusy(false);
                 }
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </label>
-            <p className="small-note">Use at least 12 characters.</p>
-            <Button className="btn-primary" type="submit" disabled={busy}>
-              {busy ? "Connecting…" : auth}
-            </Button>
-            <Button
-              type="button"
-              onClick={() =>
-                setAuth(auth === "Sign Up" ? "Sign In" : "Sign Up")
-              }
+              }}
             >
-              {auth === "Sign Up"
-                ? "Already have an account? Sign In"
-                : "Create an account"}
-            </Button>
-          </form>
+              {auth === "Sign Up" && (
+                <>
+                  <label className="field">
+                    Account type
+                    <Choice
+                      label="Account type"
+                      value={role}
+                      options={["Creator", "Brand"]}
+                      onChange={(v) => setRole(v as "Creator" | "Brand")}
+                    />
+                  </label>
+                  <label className="field">
+                    Your display name
+                    <Input
+                      required
+                      maxLength={60}
+                      autoComplete="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </label>
+                </>
+              )}
+              <label className="field">
+                Email
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                Password
+                <Input
+                  type="password"
+                  required
+                  minLength={12}
+                  maxLength={128}
+                  autoComplete={
+                    auth === "Sign Up" ? "new-password" : "current-password"
+                  }
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </label>
+              <p className="small-note">Use at least 12 characters.</p>
+              <Button className="btn-primary" type="submit" disabled={busy}>
+                {busy ? "Connecting…" : auth}
+              </Button>
+              <Button
+                type="button"
+                onClick={() =>
+                  setAuth(auth === "Sign Up" ? "Sign In" : "Sign Up")
+                }
+              >
+                {auth === "Sign Up"
+                  ? "Already have an account? Sign In"
+                  : "Create an account"}
+              </Button>
+              {auth === "Sign In" && (
+                <Button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => {
+                    setPassword("");
+                    setAuth("Reset");
+                  }}
+                >
+                  Forgot password?
+                </Button>
+              )}
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </Ctx.Provider>

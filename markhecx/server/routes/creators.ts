@@ -1,3 +1,4 @@
+import { searchCreators } from "../services/discovery";
 import { Router } from "express";
 import { z } from "zod";
 import { authenticate, requireRole } from "../middleware/auth";
@@ -26,6 +27,9 @@ creatorRoutes.get("/creators/username/:username", async (req, res) => {
   if (!doc) throw new ApiError(404, "not_found", "Creator not found.");
   res.json({ creator: publicCreator(doc), publication: doc.state.publication });
 });
+creatorRoutes.get("/creators/search", async (req, res) =>
+  res.json(await searchCreators(req.query)),
+);
 creatorRoutes.get("/creators/:id", async (req, res) => {
   const doc = await creatorDocuments.findOne({
     _id: req.params.id,

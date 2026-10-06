@@ -1,3 +1,4 @@
+import type { CreativeCapabilities } from "./creative";
 /** Phase 2 domain contracts. Identity, presentation, and assistance are separate. */
 export interface User {
   id: string;
@@ -39,6 +40,7 @@ export interface SocialLink {
   url: string;
 }
 export interface CreatorProfile {
+  creative?: CreativeCapabilities;
   name: string;
   username: string;
   identity: string;
@@ -59,6 +61,7 @@ export interface ProjectMedia {
   alt: string;
 }
 export interface Project {
+  creative?: CreativeCapabilities;
   id: string;
   ownerId: string;
   title: string;

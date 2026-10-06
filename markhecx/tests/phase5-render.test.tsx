@@ -240,3 +240,24 @@ test("brand application review renders submitted snapshot without private creato
     assert.ok(html.includes(value));
   assert.ok(!html.includes("Test Creator"));
 });
+
+test("recovery and creative controls render real review and optional capability inputs", async () => {
+  const { PasswordReset } = await import("../components/mark/password-reset");
+  const { BriefBuilder } = await import(
+    "../components/mark/marketplace/brief-builder"
+  );
+  const { CreativeFields } = await import(
+    "../components/mark/phase2/creative-fields"
+  );
+  const recovery = renderToStaticMarkup(<PasswordReset onBack={() => {}} />);
+  assert.ok(recovery.includes("Account email"));
+  assert.ok(recovery.includes("Send code"));
+  assert.ok(!recovery.includes("resetToken"));
+  const brief = renderToStaticMarkup(<BriefBuilder onAccept={() => {}} />);
+  assert.ok(brief.includes("Suggest brief"));
+  assert.ok(brief.includes("Describe your campaign"));
+  const fields = renderToStaticMarkup(<CreativeFields onChange={() => {}} />);
+  assert.ok(fields.includes("optional, self-declared"));
+  assert.ok(fields.includes("Commercial use"));
+  assert.ok(fields.includes("not independently verified"));
+});

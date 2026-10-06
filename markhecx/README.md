@@ -92,7 +92,7 @@ All ten HECX modules and existing field/campaign assistance use this provider. M
 - Exact CORS allowlist, Helmet, request/body/field limits, rate limits, session TTL and expiry checks, role/ownership checks, transaction-safe notifications and duplicate prevention.
 - Request logs contain request ID/method/path/status/duration, not request bodies, passwords or cookies. Errors do not expose database internals.
 - Configure `NODE_ENV=production`, HTTPS frontend origins, a private/authenticated MongoDB replica set, and the browser-visible API address before deployment. Host frontend/API on the same site for cookie compatibility; terminate TLS at a trusted reverse proxy.
-- No deployment or push has been performed. Email verification/password recovery, external generative AI, object storage, real-time push, multi-instance shared rate-limit storage, and production monitoring/backups require deployment-specific work. Current embedded images and bounded collection reads suit the local full-stack implementation; pagination/object storage should precede large datasets.
+- No deployment or push has been performed. Email verification, external generative AI, object storage, real-time push, multi-instance shared rate-limit storage, and production monitoring/backups require deployment-specific work. Current embedded images and bounded collection reads suit the local full-stack implementation; pagination/object storage should precede large datasets.
 
 ## Verification
 
@@ -106,3 +106,14 @@ npm run build
 ```
 
 Backend tests require the running local replica set and force the dedicated `markhecx_test` database. They refuse to run against the application database. See [VERIFICATION.md](VERIFICATION.md) for coverage and verification limits.
+
+
+## Full-stack completion pass
+
+The existing app now includes OTP recovery, optional creative capability fields, paginated database discovery, structured Gemini brief suggestions, campaign-specific Gemini explanations and explicit HECX preferences. See [the audit and API/configuration guide](docs/FULL_STACK_AUDIT.md).
+
+`npm run backend:mongo:init` prepares the local replica set and all model indexes without seeding sample users. Normal development is prohibited from using `markhecx_test`. Normal backend tests force mock AI and captured email.
+
+Recovery email needs `EMAIL_PROVIDER=resend`, `RESEND_API_KEY` and a verified `EMAIL_FROM`; until configured the UI reports that recovery email is unavailable. Secrets belong only in ignored server environment files.
+
+`npm run test:full-stack:live` is opt-in: it uses the real Gemini key, the real frontend HTTP transport, temporary fictional records in `markhecx_test`, and captured reset email. It verifies creator publication/search, campaign persistence, AI brief review boundaries, creator/match analysis and password reset, then removes its records. It does not automate a browser or send real user profile data.

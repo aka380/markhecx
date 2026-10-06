@@ -60,7 +60,7 @@ export function CreatorProfileContent({
       </PageTitle>
       <div className="profile-cover violet">
         <span>THE PERSON BEHIND THE WORK</span>
-        <Badge>{owner ? "Local creator profile" : label}</Badge>
+        <Badge>{owner ? "Your creator profile" : label}</Badge>
       </div>
       <div className="profile-heading">
         <Avatar name={p.name} image={p.avatar} large />
@@ -78,6 +78,28 @@ export function CreatorProfileContent({
           </span>
         )}
       </div>
+      {p.creative && (
+        <Card className="panel">
+          <h2>Creative capabilities</h2>
+          <Badge>Self-declared · not independently verified</Badge>
+          <p>{p.creative.specialization}</p>
+          {(
+            ["tools", "models", "contentTypes", "platforms", "formats"] as const
+          ).map((key) =>
+            p.creative?.[key].length ? (
+              <p key={key}>
+                <strong>{key}: </strong>
+                {p.creative[key].join(", ")}
+              </p>
+            ) : null,
+          )}
+          <p>{p.creative.workflow}</p>
+          <p>
+            Commercial use: {p.creative.commercialUse}. Confirm project
+            licensing directly.
+          </p>
+        </Card>
+      )}
       {owner && Object.keys(errors).length > 0 && (
         <div className="completion-notice">
           <div>

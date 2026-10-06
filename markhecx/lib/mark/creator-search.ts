@@ -31,6 +31,12 @@ export function searchable(c: Creator) {
     ...creatorCategories(c),
     ...c.skills,
     ...c.tags,
+    c.creative?.specialization || "",
+    ...(c.creative?.tools || []),
+    ...(c.creative?.models || []),
+    ...(c.creative?.contentTypes || []),
+    ...(c.creative?.platforms || []),
+    ...(c.creative?.formats || []),
     ...c.projects.flatMap((p) => [p.name, p.detail]),
   ].join(" ");
 }

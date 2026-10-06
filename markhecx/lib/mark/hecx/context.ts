@@ -43,6 +43,7 @@ export function buildHECXContext(
   // No avatars, media bytes, saved lists, private messages, or activity logs enter provider context.
   const p = state.profile;
   const profile = {
+    creative: p.creative,
     name: p.name,
     username: p.username,
     identity: p.identity,

@@ -1,6 +1,7 @@
 import { db } from "./database";
 import type { AppState } from "../../lib/mark/store";
 export interface CreatorDocument {
+  createdAt?: Date;
   _id: string;
   revision: number;
   state: AppState;

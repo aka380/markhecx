@@ -19,7 +19,11 @@ export const authenticate: RequestHandler = async (req, res, next) => {
       })
     : null;
   const user = session ? await users.findOne({ _id: session.userId }) : null;
-  if (!session || !user)
+  if (
+    !session ||
+    !user ||
+    (session.credentialsVersion || 0) !== (user.credentialsVersion || 0)
+  )
     throw new ApiError(401, "unauthorized", "Sign in to continue.");
   if (req.get("X-Account-ID") && req.get("X-Account-ID") !== user._id)
     throw new ApiError(

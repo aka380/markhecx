@@ -83,12 +83,12 @@ function CreateContent() {
         </div>
       ) : type === "AI Generation" ? (
         <Card className="panel create-form">
-          <Badge tone="purple">Scripted demo</Badge>
+          <Badge tone="purple">HECX assistance</Badge>
           <h2 className="section-copy">Find a starting point.</h2>
           <p className="section-copy">
-            HECX offers sample prompts for creator identities, projects, and
-            portfolio improvements. Generated content is not connected to a live
-            AI model.
+            HECX offers starting prompts for creator identities, projects, and
+            portfolio improvements. Suggestions are provided through the
+            configured backend AI provider and require your review.
           </p>
           <div className="section-copy">
             <Action href="/hecx">Open HECX</Action>

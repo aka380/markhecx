@@ -1,3 +1,4 @@
+import { memoryIndexes } from "../models/memory";
 import { notificationIndexes } from "../models/notifications";
 import { marketIndexes } from "../models/marketplace";
 import { creatorIndexes } from "../models/creators";
@@ -9,6 +10,7 @@ export async function start() {
     throw Error("Tests require the isolated test database.");
   await connectDatabase();
   await authIndexes();
+  await memoryIndexes();
   await creatorIndexes();
   await marketIndexes();
   await notificationIndexes();
@@ -37,7 +39,10 @@ export async function account(base: string, role = "Creator") {
       role,
     }),
   });
-  const body = await response.json();
+  const body = (await response.json()) as {
+    user: import("../../lib/mark/api/client").SessionUser;
+    csrfToken: string;
+  };
   if (response.status !== 201) throw Error(JSON.stringify(body));
   return {
     user: body.user,

@@ -54,13 +54,14 @@ export async function login(email: string, password: string) {
     );
   return user;
 }
-export async function newSession(userId: string) {
+export async function newSession(userId: string, credentialsVersion = 0) {
   const token = randomBytes(32).toString("base64url"),
     csrfToken = randomBytes(32).toString("base64url");
   const expiresAt = new Date(Date.now() + config.SESSION_DAYS * 86400000);
   await sessions.insertOne({
     _id: tokenHash(token),
     userId,
+    credentialsVersion,
     csrfToken,
     expiresAt,
   });

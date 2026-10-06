@@ -15,6 +15,9 @@ const schema = z.object({
   WEB_ORIGINS: z
     .string()
     .default("http://127.0.0.1:3001,http://127.0.0.1:3000"),
+  EMAIL_PROVIDER: z.enum(["disabled", "resend"]).default("disabled"),
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
   SESSION_DAYS: z.coerce.number().int().min(1).max(30).default(7),
   GEMINI_API_KEY: z.string().optional(),
   GEMINI_MODEL: z
@@ -33,3 +36,11 @@ if (
   origins.some((o) => !o.startsWith("https://"))
 )
   throw Error("Production web origins must use HTTPS.");
+
+if (
+  (config.NODE_ENV === "test") !==
+  (config.MONGODB_DATABASE === "markhecx_test")
+)
+  throw Error(
+    "Test mode must use markhecx_test; normal application mode must use a different database.",
+  );

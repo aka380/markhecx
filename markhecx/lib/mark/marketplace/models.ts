@@ -1,3 +1,4 @@
+import { creativeSchema } from "../creative";
 import { z } from "zod";
 export const campaignStatuses = [
   "Draft",
@@ -71,6 +72,11 @@ export const deliverableSchema = z.object({
 });
 export type Deliverable = z.infer<typeof deliverableSchema>;
 export const campaignSchema = z.object({
+  contentType: z.string().max(200).optional(),
+  format: z.string().max(100).optional(),
+  aspectRatio: z.string().max(50).optional(),
+  tools: strings.optional(),
+  commercialUse: z.enum(["Unspecified", "Available", "Restricted"]).optional(),
   id: z.string(),
   brandId: z.string(),
   title: text,
@@ -100,6 +106,7 @@ export const campaignSchema = z.object({
 });
 export type Campaign = z.infer<typeof campaignSchema>;
 export const creatorEvidenceSchema = z.object({
+  creative: creativeSchema.optional(),
   id: z.string(),
   name: text,
   username: text,

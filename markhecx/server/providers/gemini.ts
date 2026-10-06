@@ -1,3 +1,4 @@
+import { briefDraftSchema } from "../../lib/mark/creative";
 import { GoogleGenAI, type GenerateContentParameters } from "@google/genai";
 import { z } from "zod";
 import {
@@ -185,12 +186,14 @@ export class GeminiProvider implements AIProvider {
     const baseline = analyzeLocal(context);
     // Existing domain analysis owns factual claims, missing data and permitted mutation targets.
     const evidence = {
+      preferences: context.preferences,
       profile: context.profile,
       projects: context.projects,
       portfolio: context.portfolio,
       publicCreator: context.publicCreator,
       campaign: context.campaign,
       workload: context.workload,
+      deterministicMatch: context.deterministicMatch,
     };
     const quoteEvidence = {
       evidence,
@@ -200,11 +203,11 @@ export class GeminiProvider implements AIProvider {
     };
     const allowedEvidenceQuotes = [
       ...new Set(
-        leaves(quoteEvidence).filter(
-          (value) => value.trim() && value.length <= 2000,
+        leaves({ facts: baseline.facts, gaps: baseline.gaps, evidence }).filter(
+          (value) => value.trim() && value.length <= 300,
         ),
       ),
-    ];
+    ].slice(0, 20);
     const raw = await this.json(
       JSON.stringify({
         allowedEvidenceQuotes,
@@ -317,6 +320,37 @@ export class GeminiProvider implements AIProvider {
                   requirements: c.requirements,
                 });
     return this.suggest(action, source);
+  }
+  async brief(prompt: string) {
+    const properties = {
+      contentType: { type: "string" },
+      style: { type: "string" },
+      platform: { type: "string" },
+      format: { type: "string" },
+      aspectRatio: { type: "string" },
+      commercialUse: {
+        type: "string",
+        enum: ["Unspecified", "Available", "Restricted"],
+      },
+      requirements: { type: "array", items: { type: "string" }, maxItems: 20 },
+    };
+    const raw = await this.json(
+      JSON.stringify({
+        task: "Suggest a creative brief draft",
+        prompt,
+        instruction:
+          "All values are editable proposals, not facts or commitments. Extract stated requirements. Leave unstated values empty; commercialUse must be Unspecified unless explicitly stated. Never invent budgets, creator capabilities, clients, dates or results. Do not save anything.",
+      }),
+      {
+        type: "object",
+        properties,
+        required: Object.keys(properties),
+        additionalProperties: false,
+      },
+    );
+    const parsed = briefDraftSchema.safeParse(raw);
+    if (!parsed.success) throw new HecxError("invalid");
+    return parsed.data;
   }
   async smoke() {
     const result = await this.json(

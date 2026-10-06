@@ -127,3 +127,27 @@ hecxRoutes.get("/matches/:id", async (req, res) =>
 hecxRoutes.get("/matches", async (_req, res) =>
   res.json({ matches: await hecxBackend.allMatches(res.locals.user) }),
 );
+
+hecxRoutes.post("/brief", async (req, res) => {
+  const body = z
+    .object({ prompt: z.string().trim().min(5).max(2000) })
+    .strict()
+    .parse(req.body);
+  res.json(await hecxBackend.brief(res.locals.user, body.prompt));
+});
+hecxRoutes.post("/match-explanation", async (req, res) => {
+  const body = z
+    .object({
+      campaignId: z.string().min(1).max(100),
+      creatorId: z.string().min(1).max(100),
+    })
+    .strict()
+    .parse(req.body);
+  res.json(
+    await hecxBackend.explainMatch(
+      res.locals.user,
+      body.campaignId,
+      body.creatorId,
+    ),
+  );
+});

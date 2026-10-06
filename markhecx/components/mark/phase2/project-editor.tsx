@@ -1,4 +1,5 @@
 "use client";
+import { CreativeFields } from "./creative-fields";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -200,6 +201,10 @@ function ProjectEditorForm({ initial }: { initial: Project }) {
             </div>
           </TabsContent>
           <TabsContent value="Details">
+            <CreativeFields
+              value={draft.creative}
+              onChange={(v) => field("creative", v)}
+            />
             <div className="form-grid">
               <label className="field">
                 Your role / contribution{" "}
