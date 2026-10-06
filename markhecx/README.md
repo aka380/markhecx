@@ -117,3 +117,10 @@ The existing app now includes OTP recovery, optional creative capability fields,
 Recovery email needs `EMAIL_PROVIDER=resend`, `RESEND_API_KEY` and a verified `EMAIL_FROM`; until configured the UI reports that recovery email is unavailable. Secrets belong only in ignored server environment files.
 
 `npm run test:full-stack:live` is opt-in: it uses the real Gemini key, the real frontend HTTP transport, temporary fictional records in `markhecx_test`, and captured reset email. It verifies creator publication/search, campaign persistence, AI brief review boundaries, creator/match analysis and password reset, then removes its records. It does not automate a browser or send real user profile data.
+
+
+## Authentication and runtime completion
+
+Run `npm run backend:build` and `npm run build`, then `npm run start:local` to reuse/start the project MongoDB, API and frontend on the documented local ports. Keep the launcher open. The browser now uses the same-origin `/api/v1` gateway by default.
+
+Google GIS and explicit account linking are implemented but require OAuth client configuration. Recovery sends now wait for provider acceptance and propagate failures. See [the current technical report](docs/MASTER_PRODUCTION_REPORT.md) for exact environment variable names, Google Cloud setup, test evidence and external blockers.

@@ -15,6 +15,7 @@ const schema = z.object({
   WEB_ORIGINS: z
     .string()
     .default("http://127.0.0.1:3001,http://127.0.0.1:3000"),
+  GOOGLE_CLIENT_ID: z.string().optional(),
   EMAIL_PROVIDER: z.enum(["disabled", "resend"]).default("disabled"),
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().optional(),
@@ -44,3 +45,12 @@ if (
   throw Error(
     "Test mode must use markhecx_test; normal application mode must use a different database.",
   );
+
+if (config.NODE_ENV === "development")
+  for (const origin of [...origins]) {
+    const u = new URL(origin);
+    if (u.hostname === "127.0.0.1" || u.hostname === "localhost") {
+      u.hostname = u.hostname === "localhost" ? "127.0.0.1" : "localhost";
+      if (!origins.includes(u.origin)) origins.push(u.origin);
+    }
+  }

@@ -323,6 +323,10 @@ export class GeminiProvider implements AIProvider {
   }
   async brief(prompt: string) {
     const properties = {
+      title: { type: "string" },
+      objective: { type: "string" },
+      timeline: { type: "string" },
+      deliverables: { type: "array", items: { type: "string" }, maxItems: 20 },
       contentType: { type: "string" },
       style: { type: "string" },
       platform: { type: "string" },

@@ -5,7 +5,10 @@ export interface User {
   email: string;
   name: string;
   role: "Creator" | "Brand";
-  passwordHash: string;
+  passwordHash?: string;
+  provider?: "password" | "google" | "password+google";
+  googleSubject?: string;
+  updatedAt?: Date;
   createdAt: Date;
 }
 export interface Session {
@@ -18,6 +21,17 @@ export interface Session {
 export const users = db.collection<User>("users");
 export const sessions = db.collection<Session>("sessions");
 export async function authIndexes() {
+  await users.createIndex(
+    { googleSubject: 1 },
+    {
+      unique: true,
+      partialFilterExpression: { googleSubject: { $type: "string" } },
+    },
+  );
+  await googleChallenges.createIndex(
+    { expiresAt: 1 },
+    { expireAfterSeconds: 0 },
+  );
   await passwordResets.createIndex(
     { expiresAt: 1 },
     { expireAfterSeconds: 3600 },
@@ -55,3 +69,9 @@ export interface PasswordReset {
   verified: boolean;
 }
 export const passwordResets = db.collection<PasswordReset>("password_resets");
+
+export const googleChallenges = db.collection<{
+  _id: string;
+  nonceHash: string;
+  expiresAt: Date;
+}>("google_challenges");

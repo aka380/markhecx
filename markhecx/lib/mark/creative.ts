@@ -7,6 +7,7 @@ export const creativeSchema = z.object({
   models: values,
   contentTypes: values,
   formats: values,
+  aspectRatio: z.string().max(50).default(""),
   platforms: values,
   workflow: z.string().max(2000).default(""),
   commercialUse: z
@@ -18,6 +19,10 @@ export const creativeSchema = z.object({
 export type CreativeCapabilities = z.infer<typeof creativeSchema>;
 export const briefDraftSchema = z
   .object({
+    title: z.string().max(200).optional(),
+    objective: z.string().max(200).optional(),
+    timeline: z.string().max(500).optional(),
+    deliverables: z.array(z.string().max(500)).max(20).optional(),
     contentType: z.string().max(200),
     style: z.string().max(500),
     platform: z.string().max(100),

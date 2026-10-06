@@ -35,6 +35,8 @@ export async function register(input: {
     name: input.name.trim(),
     role: input.role,
     passwordHash: await hashPassword(input.password),
+    provider: "password",
+    updatedAt: new Date(),
     createdAt: new Date(),
   };
   await users.insertOne(user);

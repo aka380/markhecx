@@ -25,6 +25,10 @@ export function PublicProjectDialog({
             {project.creative && (
               <section>
                 <h3>Creative workflow</h3>
+                <p>
+                  Aspect ratio:{" "}
+                  {project.creative.aspectRatio || "Not specified"}
+                </p>
                 <p>Self-declared evidence; not independently verified.</p>
                 <p>{project.creative.specialization}</p>
                 <p>

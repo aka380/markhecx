@@ -84,10 +84,17 @@ export function menuHref(group: string, item: string) {
   return "/" + item.toLowerCase();
 }
 export function Shell({ children }: { children: React.ReactNode }) {
-  const { state, openAuth, logout } = useApp();
+  const { state, ready, authError, openAuth, logout } = useApp();
   const path = usePathname();
   const router = useRouter();
   const params = useSearchParams();
+  if (!ready)
+    return (
+      <div role="status" className="info-line">
+        Restoring your MarkHECX session…
+      </div>
+    );
+  if (authError) return null;
   const q = params.get("q") || "";
   const brand = state.signedIn && state.accountType === "Brand";
   const activeMenus = {

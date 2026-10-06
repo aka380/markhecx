@@ -1,3 +1,11 @@
+import {
+  googleChallenge,
+  googleSignIn,
+  consumeGoogleChallenge,
+} from "../services/google";
+import { type User } from "../models/auth";
+import { ApiError } from "../middleware/errors";
+import type { Request, Response } from "express";
 import { passwordReset } from "../services/password-reset";
 import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
@@ -38,19 +46,7 @@ for (const path of ["register", "login"] as const)
             const i = credentials.parse(req.body);
             return login(i.email, i.password);
           })();
-    const previous = sessionToken(req);
-    if (previous) await sessions.deleteOne({ _id: tokenHash(previous) });
-    const session = await newSession(user._id, user.credentialsVersion || 0);
-    res.cookie("markhecx_session", session.token, {
-      httpOnly: true,
-      secure: config.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/api",
-      expires: session.expiresAt,
-    });
-    res
-      .status(path === "register" ? 201 : 200)
-      .json({ user: publicUser(user), csrfToken: session.csrfToken });
+    await establishSession(req, res, user, path === "register" ? 201 : 200);
   });
 authRoutes.get("/me", authenticate, (_req, res) => {
   res.json({
@@ -109,3 +105,73 @@ authRoutes.post("/reset-password", resetLimiter, async (req, res) => {
   await passwordReset.reset(body.resetToken, body.password);
   res.json({ message: "Password changed. Sign in with your new password." });
 });
+
+async function establishSession(
+  req: Request,
+  res: Response,
+  user: User,
+  status = 200,
+) {
+  const previous = sessionToken(req);
+  if (previous) await sessions.deleteOne({ _id: tokenHash(previous) });
+  const session = await newSession(user._id, user.credentialsVersion || 0);
+  res.cookie("markhecx_session", session.token, {
+    httpOnly: true,
+    secure: config.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/api",
+    expires: session.expiresAt,
+  });
+  res
+    .status(status)
+    .json({ user: publicUser(user), csrfToken: session.csrfToken });
+}
+
+const googleBody = z
+  .object({
+    credential: z.string().min(20).max(16000),
+    nonce: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+    role: z.enum(["Creator", "Brand"]).default("Creator"),
+  })
+  .strict();
+authRoutes.post("/google/challenge", limiter, async (_req, res) => {
+  const c = await googleChallenge();
+  res.cookie("markhecx_google", c.cookie, {
+    httpOnly: true,
+    secure: config.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/api",
+    maxAge: 300000,
+  });
+  res.json({ nonce: c.nonce, clientId: c.clientId });
+});
+async function googleLogin(req: Request, res: Response, link = false) {
+  const body = googleBody.parse(req.body),
+    cookie = req.headers.cookie
+      ?.split(";")
+      .map((s) => s.trim())
+      .find((s) => s.startsWith("markhecx_google="))
+      ?.slice("markhecx_google=".length);
+  if (!cookie || !/^[A-Za-z0-9_-]{43}$/.test(cookie))
+    throw new ApiError(401, "google_challenge", "Restart Google Sign-In.");
+  const challenge = await consumeGoogleChallenge(cookie, body.nonce);
+  res.clearCookie("markhecx_google", {
+    path: "/api",
+    httpOnly: true,
+    secure: config.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+  if (!challenge)
+    throw new ApiError(401, "google_challenge", "Restart Google Sign-In.");
+  const user = await googleSignIn(
+    body.credential,
+    body.nonce,
+    body.role,
+    link ? res.locals.user._id : undefined,
+  );
+  await establishSession(req, res, user);
+}
+authRoutes.post("/google", limiter, async (req, res) => googleLogin(req, res));
+authRoutes.post("/google/link", limiter, authenticate, async (req, res) =>
+  googleLogin(req, res, true),
+);

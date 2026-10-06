@@ -36,14 +36,14 @@ test("password recovery: real HTTP OTP delivery, cooldown, one use, session revo
       email: "absent-" + crypto.randomUUID() + "@test.example",
     });
     assert.equal(await absent.text(), text);
-    assert.equal(testEmail.messages.length, 1);
+    assert.equal(testEmail.messages.length, 2);
     const otp = testEmail.messages[0].text.match(/\b\d{6}\b/)![0];
     const row = await passwordResets.findOne({ _id: tokenHash(a.user.email) });
     assert.ok(row);
     assert.ok(!JSON.stringify(row).includes(otp));
     assert.equal(row.expiresAt.getTime() - row.sentAt.getTime(), 600000);
     await call("resend-reset-otp", { email: a.user.email });
-    assert.equal(testEmail.messages.length, 1);
+    assert.equal(testEmail.messages.length, 2);
     assert.equal(
       (
         await call("verify-reset-otp", {

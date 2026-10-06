@@ -54,6 +54,9 @@ export function BriefBuilder({
           </p>
           {(
             [
+              "title",
+              "objective",
+              "timeline",
               "contentType",
               "style",
               "platform",
@@ -64,7 +67,7 @@ export function BriefBuilder({
             <label className="field" key={key}>
               {key}
               <Input
-                value={draft[key]}
+                value={draft[key] || ""}
                 maxLength={
                   key === "style" ? 500 : key === "aspectRatio" ? 50 : 100
                 }
@@ -83,6 +86,18 @@ export function BriefBuilder({
               })
             }
           />
+          <label className="field">
+            Deliverables (one per line)
+            <Textarea
+              value={(draft.deliverables || []).join("\n")}
+              onChange={(e) =>
+                setDraft({
+                  ...draft,
+                  deliverables: e.target.value.split("\n").slice(0, 20),
+                })
+              }
+            />
+          </label>
           <label className="field">
             Requirements (one per line)
             <Textarea

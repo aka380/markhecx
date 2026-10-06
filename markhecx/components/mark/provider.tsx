@@ -1,4 +1,5 @@
 "use client";
+import { GoogleSignIn } from "./google-sign-in";
 import { PasswordReset } from "./password-reset";
 import {
   createContext,
@@ -29,10 +30,12 @@ import { Button, Input, Brand, Badge, Choice } from "./ui";
 type Context = {
   state: AppState;
   ready: boolean;
+  authError: string;
   user: SessionUser | null;
   update: (fn: (s: AppState) => AppState) => Promise<boolean>;
   openAuth: (mode?: string) => void;
   logout: () => Promise<void>;
+  restore: () => Promise<void>;
   toggleSave: (id: string) => Promise<void>;
   log: (text: string) => void;
 };
@@ -228,7 +231,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
   return (
     <Ctx.Provider
-      value={{ state, ready, user, update, openAuth, logout, toggleSave, log }}
+      value={{
+        state,
+        ready,
+        authError: error,
+        user,
+        update,
+        openAuth,
+        logout,
+        toggleSave,
+        log,
+        restore: () => load(),
+      }}
     >
       {error && (
         <div role="alert" className="info-line">
@@ -252,6 +266,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           <DialogDescription>
             Sign in to access your saved workspace across devices.
           </DialogDescription>
+          {auth && auth !== "Reset" && (
+            <GoogleSignIn
+              role={role}
+              onSession={async (session) => {
+                await load(session);
+                setAuth("");
+                router.push(
+                  session.user.role === "Brand" ? "/brand" : "/profile",
+                );
+              }}
+            />
+          )}
           {auth === "Reset" ? (
             <PasswordReset onBack={() => setAuth("Sign In")} />
           ) : (

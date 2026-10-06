@@ -46,6 +46,14 @@ export function CreativeFields({
         </label>
       ))}
       <label className="field">
+        Aspect ratio
+        <Input
+          value={v.aspectRatio}
+          maxLength={50}
+          onChange={(e) => patch({ aspectRatio: e.target.value })}
+        />
+      </label>
+      <label className="field">
         Workflow
         <Textarea
           value={v.workflow}

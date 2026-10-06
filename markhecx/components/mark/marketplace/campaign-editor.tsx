@@ -211,6 +211,21 @@ function Editor({ id }: { id?: string }) {
             <BriefBuilder
               onAccept={(v) =>
                 patch({
+                  title: v.title || draft.title,
+                  objective: v.objective || draft.objective,
+                  turnaround: v.timeline || draft.turnaround,
+                  deliverables: v.deliverables?.length
+                    ? v.deliverables
+                        .filter(Boolean)
+                        .map((description) => ({
+                          id: crypto.randomUUID(),
+                          type: v.contentType,
+                          quantity: 1,
+                          description,
+                          deadline: "",
+                          requirements: "",
+                        }))
+                    : draft.deliverables,
                   contentType: v.contentType,
                   creativeDirection: v.style,
                   platforms: v.platform ? [v.platform] : [],

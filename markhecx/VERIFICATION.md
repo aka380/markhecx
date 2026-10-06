@@ -76,3 +76,8 @@ Previous Phase 5 verification is archived at [docs/PHASE_5_VERIFICATION.md](docs
 - Browser clicking/typing, hydrated console inspection and desktop/tablet/mobile visual QA remain unverified because browser access was previously blocked. HTTP transport and server markup checks are not browser end-to-end acceptance.
 
 See [FULL_STACK_AUDIT.md](docs/FULL_STACK_AUDIT.md) for changed subsystems, database fields/indexes, endpoints, configuration, evidence boundaries and scale limits. No external deployment or Git push was performed.
+
+
+## Master authentication pass — 2026-10-07
+
+113 tests passed (27 backend, 86 regression); TypeScript, lint and frontend/backend builds passed. The existing stopped replica set was reopened without reset. Actual same-origin gateway signup, persistent-cookie attributes, repeated current-user requests, protected workspace access and logout invalidation passed. Real Gemini full-stack smoke passed. HTTP checks covered 44 routes and 33 assets. Google security/linking and email-rejection handling passed controlled tests. **Real Google login and email inbox delivery remain blocked by missing external configuration; browser refresh/reopen/visual checks are unverified.** See [MASTER_PRODUCTION_REPORT.md](docs/MASTER_PRODUCTION_REPORT.md) for status-by-feature evidence and setup.

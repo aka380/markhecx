@@ -65,22 +65,22 @@ export function passwordResetService(email: EmailProvider = emailProvider) {
         if ((e as { code?: number }).code === 11000) return;
         throw e;
       }
-      // Delivery is asynchronous for the same response path/timing on existing and unknown accounts.
-      if (user)
-        void email
-          .send({
-            to: normalized,
-            subject: "Your MarkHECX password reset code",
-            text: `Your MarkHECX code is ${otp}. It expires in 10 minutes. If you did not request this, ignore this email.`,
-          })
-          .catch(async () => {
-            await passwordResets
-              .deleteOne({ _id: id, generation })
-              .catch(() => {});
-            console.error(
-              JSON.stringify({ event: "password_reset_delivery_failed" }),
-            );
-          });
+      // Deliver the same neutral challenge for known and unknown addresses. Neither
+      // response timing nor provider rejection reveals whether an account exists.
+      try {
+        await email.send({
+          to: normalized,
+          subject: "Your MarkHECX password reset request",
+          text: `A password reset was requested for this address. If it belongs to a MarkHECX account, use ${otp} within 10 minutes. Otherwise ignore this message.`,
+        });
+      } catch {
+        await passwordResets.deleteOne({ _id: id, generation });
+        throw new ApiError(
+          503,
+          "email_unavailable",
+          "Password recovery email could not be sent. Please try again later.",
+        );
+      }
     },
     async verify(address: string, otp: string) {
       const id = tokenHash(address.trim().toLowerCase()),
@@ -134,9 +134,22 @@ export function passwordResetService(email: EmailProvider = emailProvider) {
             { session },
           );
           if (!record?.userId) throw invalid();
+          const existing = await users.findOne(
+            { _id: record.userId },
+            { session },
+          );
           const changed = await users.updateOne(
             { _id: record.userId },
-            { $set: { passwordHash: hashed }, $inc: { credentialsVersion: 1 } },
+            {
+              $set: {
+                passwordHash: hashed,
+                updatedAt: new Date(),
+                provider: existing?.googleSubject
+                  ? "password+google"
+                  : "password",
+              },
+              $inc: { credentialsVersion: 1 },
+            },
             { session },
           );
           if (!changed.matchedCount) throw invalid();

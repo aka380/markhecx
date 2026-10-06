@@ -1,4 +1,5 @@
 "use client";
+import { GoogleSignIn } from "./google-sign-in";
 import { HecxPreferences } from "./hecx/preferences";
 import { useState } from "react";
 import {
@@ -36,7 +37,7 @@ export const secondaryRoutes = [
   "notifications",
 ];
 export function SecondaryPage({ section }: { section: string }) {
-  const { state, logout } = useApp();
+  const { restore, state, logout } = useApp();
   const [sampleType, setSampleType] = useState("Creators");
   const privatePage = [
     "activity",
@@ -154,6 +155,22 @@ export function SecondaryPage({ section }: { section: string }) {
         />
         <div className="settings-grid">
           <HecxPreferences />
+          {state.signedIn && (
+            <Card className="panel">
+              <h2>Link Google</h2>
+              <p>
+                Connect the Google identity with your account email after
+                signing in to MarkHECX.
+              </p>
+              <GoogleSignIn
+                role={state.accountType}
+                link
+                onSession={async () => {
+                  await restore();
+                }}
+              />
+            </Card>
+          )}
           <Card className="panel">
             <Shield className="accent-icon" />
             <h2>Your account</h2>
