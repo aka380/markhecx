@@ -25,6 +25,7 @@ import {
   matchingService,
   scoreCreator,
   ownerCreator,
+  recommendationLevel,
 } from "../lib/mark/marketplace/matching";
 import {
   explainCampaignMatch,
@@ -34,6 +35,7 @@ import {
 import { creators } from "../lib/mark/data";
 import { emptyState, migrateState } from "../lib/mark/store";
 import { blankProject } from "../lib/mark/models";
+import { creativeSchema } from "../lib/mark/creative";
 const brand: Actor = { signedIn: true, role: "Brand", id: "local-brand" },
   creator: Actor = { signedIn: true, role: "Creator", id: "local" },
   guest: Actor = { ...creator, signedIn: false },
@@ -220,6 +222,21 @@ test("scoring is deterministic and percentage can be reconstructed from explicit
   assert.ok(
     result.find((m) => m.creatorId === "marcus-reed")!.score! >
       result.find((m) => m.creatorId === "sana-patel")!.score!,
+  );
+});
+test("recommendations require both a strong score and enough supporting evidence", () => {
+  assert.equal(
+    recommendationLevel({ score: 95, coverage: 90 }),
+    "Strongly recommended",
+  );
+  assert.equal(
+    recommendationLevel({ score: 95, coverage: 40 }),
+    "More evidence needed",
+  );
+  assert.equal(recommendationLevel({ score: 74, coverage: 80 }), "Recommended");
+  assert.equal(
+    recommendationLevel({ score: null, coverage: 100 }),
+    "More evidence needed",
   );
 });
 test("unknown budget audience platform availability experience are not positive factors", () => {
@@ -453,14 +470,30 @@ test("own match projection excludes private drafts and application snapshot surv
   app.profile.name = "Owner";
   app.profile.skills = [{ id: "s", name: "React", category: "Development" }];
   app.projects = [
-    { ...blankProject(), title: "PRIVATE DRAFT", status: "Draft" },
-    { ...blankProject(), title: "Published tutorial", status: "Published" },
+    {
+      ...blankProject(),
+      title: "PRIVATE DRAFT",
+      status: "Draft",
+      creative: { ...creativeSchema.parse({}), tools: ["Private tool"] },
+    },
+    {
+      ...blankProject(),
+      title: "Published tutorial",
+      status: "Published",
+      creative: {
+        ...creativeSchema.parse({}),
+        tools: ["After Effects"],
+        formats: ["Short-form video"],
+      },
+    },
   ];
   const projection = ownerCreator(app);
   assert.deepEqual(
     projection.projects.map((p) => p.name),
     ["Published tutorial"],
   );
+  assert.deepEqual(projection.creative?.tools, ["After Effects"]);
+  assert.ok(!projection.creative?.tools.includes("Private tool"));
   const { c, s: initial } = published();
   let s = initial;
   const snapshot = {

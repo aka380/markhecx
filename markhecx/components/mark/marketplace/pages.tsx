@@ -45,6 +45,7 @@ import {
   matchingService,
   ownerCreator,
   filterMatches,
+  recommendationLevel,
 } from "@/lib/mark/marketplace/matching";
 import { useDiscoveryCreators } from "../discovery/use-discovery";
 import { CreatorCard } from "../creator-card";
@@ -1317,8 +1318,9 @@ function Matches({ id }: { id: string }) {
                     <Badge tone="purple">
                       {m.score === null
                         ? "Insufficient evidence"
-                        : `${m.score}% HECX match`}
+                        : `${m.score}% requirement match`}
                     </Badge>
+                    <strong>{recommendationLevel(m)}</strong>
                     <p>{m.coverage}% evidence coverage</p>
                     <p>
                       {m.strengths[0] || "No positive factor evidence yet."}

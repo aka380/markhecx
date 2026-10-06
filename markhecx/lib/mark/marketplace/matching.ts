@@ -2,6 +2,7 @@ import type { Creator } from "../data";
 import type { AppState } from "../store";
 import { Campaign, CreatorMatch, MatchFactor } from "./models";
 import { explainCampaignMatch } from "../hecx/campaign";
+import { mergeCreativeEvidence } from "../creative";
 const normalize = (s: string) => s.trim().toLowerCase();
 function mentionsSkill(text: string, skill: string) {
   const escaped = normalize(skill).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -13,23 +14,25 @@ function mentionsSkill(text: string, skill: string) {
 export function ownerCreator(
   s: Pick<AppState, "profile" | "projects" | "publication">,
 ): Creator {
+  const publishedProjects = s.projects.filter((p) => p.status === "Published");
   return {
     id: "local",
     source: "local",
     name: s.profile.name,
-    creative: s.profile.creative,
+    creative: mergeCreativeEvidence(
+      s.profile.creative,
+      publishedProjects.map((project) => project.creative),
+    ),
     username: s.profile.username,
     identity: s.profile.identity,
     bio: s.profile.bio,
     skills: s.profile.skills.map((x) => x.name),
     categories: [...new Set(s.profile.skills.map((x) => x.category))],
     category: s.profile.skills[0]?.category || "",
-    projects: s.projects
-      .filter((p) => p.status === "Published")
-      .map((p) => ({
-        name: p.title,
-        detail: [p.description, ...p.techStack].join(" "),
-      })),
+    projects: publishedProjects.map((p) => ({
+      name: p.title,
+      detail: [p.description, ...p.techStack].join(" "),
+    })),
     publicPortfolio:
       !!s.publication && s.publication.portfolio.visibility === "Public",
     badge: "",
@@ -38,6 +41,23 @@ export function ownerCreator(
     trending: false,
     tags: s.profile.tags,
   };
+}
+
+export type RecommendationLevel =
+  | "Strongly recommended"
+  | "Recommended"
+  | "Possible fit"
+  | "Low requirement fit"
+  | "More evidence needed";
+
+export function recommendationLevel(
+  match: Pick<CreatorMatch, "score" | "coverage">,
+): RecommendationLevel {
+  if (match.score === null || match.coverage < 50) return "More evidence needed";
+  if (match.score >= 85) return "Strongly recommended";
+  if (match.score >= 70) return "Recommended";
+  if (match.score >= 50) return "Possible fit";
+  return "Low requirement fit";
 }
 export function scoreCreator(
   campaign: Campaign,

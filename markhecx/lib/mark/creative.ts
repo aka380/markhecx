@@ -17,6 +17,38 @@ export const creativeSchema = z.object({
   currency: z.enum(["USD", "INR", "EUR", "GBP"]).default("USD"),
 });
 export type CreativeCapabilities = z.infer<typeof creativeSchema>;
+
+/** Combines self-declared profile and published-project capability evidence. */
+export function mergeCreativeEvidence(
+  profile: CreativeCapabilities | undefined,
+  projects: Array<CreativeCapabilities | undefined>,
+): CreativeCapabilities | undefined {
+  const evidence = [profile, ...projects].filter(
+    (item): item is CreativeCapabilities => !!item,
+  );
+  if (!evidence.length) return undefined;
+  const unique = (
+    key: "tools" | "models" | "contentTypes" | "formats" | "platforms",
+  ) => [...new Set(evidence.flatMap((item) => item[key]).filter(Boolean))];
+  const first = (key: "specialization" | "aspectRatio" | "workflow") =>
+    evidence.find((item) => item[key].trim())?.[key] || "";
+  const commercial = evidence.find(
+    (item) => item.commercialUse !== "Unspecified",
+  )?.commercialUse;
+  return {
+    specialization: first("specialization"),
+    tools: unique("tools"),
+    models: unique("models"),
+    contentTypes: unique("contentTypes"),
+    formats: unique("formats"),
+    aspectRatio: first("aspectRatio"),
+    platforms: unique("platforms"),
+    workflow: first("workflow"),
+    commercialUse: commercial || "Unspecified",
+    minimumBudget: profile?.minimumBudget ?? null,
+    currency: profile?.currency || "USD",
+  };
+}
 export const briefDraftSchema = z
   .object({
     title: z.string().max(200).optional(),

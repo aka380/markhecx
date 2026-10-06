@@ -8,6 +8,7 @@ import {
 export { canonicalCategory, creatorCategories };
 import { Creator, creators } from "./data";
 import { CreatorProfile, Project, Publication, blankPortfolio } from "./models";
+import { mergeCreativeEvidence } from "./creative";
 
 export const discoveryCategories = [
   "AI & Technology",
@@ -84,7 +85,10 @@ export function discoveryCreators(publication: Publication | null): Creator[] {
       id: "local",
       source: "local",
       name: p.name,
-      creative: p.creative,
+      creative: mergeCreativeEvidence(
+        p.creative,
+        projects.map((project) => project.creative),
+      ),
       username: p.username,
       avatar: p.avatar,
       identity: p.identity,

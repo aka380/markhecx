@@ -14,6 +14,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Campaign, CreatorMatch } from "@/lib/mark/marketplace/models";
+import { recommendationLevel } from "@/lib/mark/marketplace/matching";
 import { accepting, invitationService } from "@/lib/mark/marketplace/services";
 import { useMarketplace } from "./provider";
 import { useDiscoveryCreators } from "../discovery/use-discovery";
@@ -95,13 +96,22 @@ export function MatchAnalysis({ match: m }: { match: CreatorMatch }) {
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const key = m.campaignId + ":" + m.creatorId;
+  const recommendation = recommendationLevel(m);
 
   return (
     <div className="match-analysis">
-      <Badge tone="purple">HECX · Explainable matching</Badge>
+      <Badge tone="purple">HECX · {recommendation}</Badge>
       <h3 className="match-score">
-        {m.score === null ? "Not enough data" : `${m.score}% match`}
+        {m.score === null
+          ? "Not enough data"
+          : `${m.score}% requirement match`}
       </h3>
+      {m.score !== null && (
+        <p>
+          {recommendation}: {m.score}% of the comparable campaign requirements
+          align with this creator, based on {m.coverage}% evidence coverage.
+        </p>
+      )}
       <p>{m.explanation}</p>
       <Button
         disabled={busy}
