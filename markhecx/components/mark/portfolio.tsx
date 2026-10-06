@@ -90,7 +90,10 @@ export function PortfolioBuilder() {
     });
   }
   async function saveDraft() {
-    if (!(await setPortfolio({ ...portfolio, savedAt: new Date().toISOString() }))) return;
+    if (
+      !(await setPortfolio({ ...portfolio, savedAt: new Date().toISOString() }))
+    )
+      return;
     log("Saved portfolio draft");
     toast.success("Portfolio draft saved.");
   }
@@ -115,15 +118,18 @@ export function PortfolioBuilder() {
         state.profile,
         state.projects,
       );
-      if (!(await update((s) => ({
-        ...s,
-        publication,
-        portfolio: {
-          ...s.portfolio,
-          savedAt: publication.publishedAt,
-          status: publication.portfolio.status,
-        },
-      })))) return;
+      if (
+        !(await update((s) => ({
+          ...s,
+          publication,
+          portfolio: {
+            ...s.portfolio,
+            savedAt: publication.publishedAt,
+            status: publication.portfolio.status,
+          },
+        })))
+      )
+        return;
       log("Published portfolio: " + publication.portfolio.visibility);
       setPublish(false);
       toast.success("Your published portfolio is ready.");
@@ -512,22 +518,21 @@ export function PortfolioBuilder() {
           </label>
           <p className="small-note">
             {portfolio.visibility === "Public"
-              ? "Anyone using this browser can view the published route. It is eligible for local discovery."
+              ? "Anyone can view the published portfolio. It appears in creator discovery."
               : portfolio.visibility === "Unlisted"
-                ? "Accessible through the direct local link; excluded from discovery."
-                : "Only visible while signed in to the local creator workspace."}{" "}
-            These are UI access states, not secure server authorization.
+                ? "Accessible through its direct link; excluded from discovery."
+                : "Only visible while signed in to your Creator account."}{" "}
+            Access is enforced by the backend.
           </p>
           <p className="small-note">
-            Address: /u/{state.profile.username || "username"}. Cross-device
-            sharing is not connected.
+            Address: /u/{state.profile.username || "username"}.
           </p>
           <Button
             className="btn-primary"
             onClick={publishNow}
             disabled={!visible.length}
           >
-            Publish locally
+            Publish portfolio
           </Button>
         </DialogContent>
       </Dialog>
@@ -611,11 +616,14 @@ export function PortfolioBuilder() {
                   const errors = profileErrors(next);
                   setErrors(errors);
                   if (Object.keys(errors).length) return;
-                  if (!(await update((s) => ({
-                    ...s,
-                    profile: next,
-                    portfolio: { ...s.portfolio, username: next.username },
-                  })))) return;
+                  if (
+                    !(await update((s) => ({
+                      ...s,
+                      profile: next,
+                      portfolio: { ...s.portfolio, username: next.username },
+                    })))
+                  )
+                    return;
                   setProfileDraft(null);
                   toast.success("Source profile updated.");
                 }}

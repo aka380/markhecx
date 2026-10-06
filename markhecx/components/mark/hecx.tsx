@@ -67,7 +67,7 @@ export function HecxPage() {
       ) : !state.signedIn ? (
         <SignInGate
           title="Your data, your intelligence workspace."
-          description="Sign in locally to analyze your profile, projects, and portfolio. No private context is used while signed out."
+          description="Sign in to analyze your profile, projects, and portfolio. No private context is used while signed out."
         />
       ) : (
         <HecxWorkspace
@@ -254,8 +254,7 @@ function HecxWorkspace() {
             project records · {state.profile.achievements.length} achievements.
           </p>
           <p>
-            Nothing leaves this browser. Analyses are session-only; refresh
-            clears them.
+            Analysis runs on the connected server using the deterministic HECX provider. Results are session-only; refresh clears them.
           </p>
         </div>
         {!!recent.length && (

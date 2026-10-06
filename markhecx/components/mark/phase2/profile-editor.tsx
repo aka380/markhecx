@@ -62,11 +62,14 @@ function ProfileEditorForm({ initial }: { initial: CreatorProfile }) {
       );
       return;
     }
-    if (!(await update((s) => ({
-      ...s,
-      profile: next,
-      portfolio: { ...s.portfolio, username: next.username },
-    })))) return;
+    if (
+      !(await update((s) => ({
+        ...s,
+        profile: next,
+        portfolio: { ...s.portfolio, username: next.username },
+      })))
+    )
+      return;
     log("Updated creator profile");
     toast.success("Your profile is saved.");
     router.push("/profile");

@@ -78,7 +78,7 @@ test("all portfolio templates render the same source facts, omit absent records,
   }
 });
 test("creator cards use canonical profile/portfolio links and expose no signed-out recommendation", () => {
-  const c = creators[0];
+  const c = { ...creators[0], source: "local" as const };
   const html = renderToStaticMarkup(
     <AppProvider>
       <CreatorCard
@@ -105,6 +105,8 @@ test("creator cards use canonical profile/portfolio links and expose no signed-o
   );
   assert.ok(!without.includes("View Portfolio"));
   assert.ok(without.includes("No public portfolio"));
+  assert.ok(without.includes("sample=1"));
+  assert.ok(without.includes("Sample showcase"));
 });
 
 import { HecxInsights } from "../components/mark/hecx/insights";

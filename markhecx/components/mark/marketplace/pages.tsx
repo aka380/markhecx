@@ -78,7 +78,7 @@ function BrandDashboardContent({ analytics }: { analytics: boolean }) {
     [data.campaigns, actor],
   );
   const { matches: serverMatches } = useMatches();
-  const matches = campaigns.map(c => serverMatches[c.id] || []);
+  const matches = campaigns.map((c) => serverMatches[c.id] || []);
   const apps = applicationService.list(data, actor);
   return (
     <div className="page-enter">
@@ -365,7 +365,9 @@ export function CampaignDiscovery({ saved = false }: { saved?: boolean }) {
     [category, setCategory] = useState("All categories"),
     [sort, setSort] = useState("Newest");
   const { matches: serverMatches } = useMatches();
-  const matchMap = new Map(Object.entries(serverMatches).map(([id, matches]) => [id, matches[0]]));
+  const matchMap = new Map(
+    Object.entries(serverMatches).map(([id, matches]) => [id, matches[0]]),
+  );
   const campaigns = data.campaigns
     .filter(
       (c) =>
@@ -525,7 +527,9 @@ export function CampaignDetail({ id }: { id: string }) {
                 label={status === "Published" ? "Publish" : `Mark ${status}`}
                 description={`Change ${c.title} from ${c.status} to ${status}. Public visibility and application availability follow the campaign status.`}
                 onConfirm={async () =>
-                  await change((s) => campaignService.status(s, actor, id, status))
+                  await change((s) =>
+                    campaignService.status(s, actor, id, status),
+                  )
                 }
               />
             ))}
@@ -654,6 +658,15 @@ export function CampaignDetail({ id }: { id: string }) {
               <p>Apply by: {c.applicationDeadline || "Not specified"}</p>
               {c.turnaround && <p>Turnaround: {c.turnaround}</p>}
             </Card>
+            {actor.signedIn && actor.role === "Creator" && matching.error && (
+              <Card className="panel section-copy">
+                <p role="alert">{matching.error}</p>
+                <Button onClick={matching.retry}>Retry matching</Button>
+              </Card>
+            )}
+            {actor.signedIn && actor.role === "Creator" && matching.loading && (
+              <p role="status">Analyzing your match…</p>
+            )}
             {actor.signedIn && actor.role === "Creator" && match && (
               <Card className="panel section-copy">
                 <MatchAnalysis match={match} />
@@ -709,7 +722,8 @@ function ApplicationForm({
       <DialogContent className="mark-dialog campaign-dialog">
         <DialogTitle>Apply to {c.title}</DialogTitle>
         <DialogDescription>
-          Your message and selected evidence are shared with the campaign’s brand.
+          Your message and selected evidence are shared with the campaign’s
+          brand.
         </DialogDescription>
         <form
           className="form-grid"
@@ -1117,7 +1131,10 @@ function Matches({ id }: { id: string }) {
     [error, setError] = useState(false),
     [retry, setRetry] = useState(0);
   const matching = useMatches();
-  const computed = { matches: matching.matches[id] || [], failed: !!matching.error };
+  const computed = {
+    matches: matching.matches[id] || [],
+    failed: !!matching.error,
+  };
   if (!c)
     return (
       <EmptyState
@@ -1264,7 +1281,9 @@ function Matches({ id }: { id: string }) {
           </SheetContent>
         </Sheet>
       </div>
-      {matching.loading ? <p role="status">Analyzing campaign evidence…</p> : error || computed.failed ? (
+      {matching.loading ? (
+        <p role="status">Analyzing campaign evidence…</p>
+      ) : error || computed.failed ? (
         <EmptyState
           title="HECX matching unavailable"
           description="The matching service could not complete this comparison. Try again."

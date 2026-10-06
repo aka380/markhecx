@@ -28,7 +28,7 @@ export function CreatorCard({
       (state.accountType === "Brand" ? state.brandSaved : state.saved).includes(
         c.id,
       ));
-  const query = "?from=" + encodeURIComponent(returnTo);
+  const query = "?from=" + encodeURIComponent(returnTo) + (c.source !== "local" ? "&sample=1" : "");
   const profileHref = `/profile/${encodeURIComponent(c.username)}${query}`;
   return (
     <Card interactive className="creator-card">
@@ -36,6 +36,7 @@ export function CreatorCard({
         <span className="cover-label">{c.category}</span>
         <Button
           variant="ghost"
+          disabled={c.source !== "local"}
           size="icon"
           className={`save-button ${isSaved ? "saved" : ""}`}
           aria-label={`${isSaved ? "Unsave" : "Save"} ${c.name}`}
@@ -118,7 +119,7 @@ export function CreatorCard({
             </Action>
           )}
         </div>
-        {!campaignId && (
+        {!campaignId && c.source === "local" && (
           <Action
             href={`/hecx?module=Match%20Analyzer&creator=${encodeURIComponent(c.id)}&q=${encodeURIComponent(new URLSearchParams(returnTo.split("?")[1] || "").get("q") || "")}`}
             secondary

@@ -35,7 +35,12 @@ export function HecxInsights({ result }: { result: HecxResult }) {
           )
       : text;
     try {
-      if (!(await update((current) => applyHECXChange(current, selected, "accept", value)))) return;
+      if (
+        !(await update((current) =>
+          applyHECXChange(current, selected, "accept", value),
+        ))
+      )
+        return;
       setDecisions((d) => ({ ...d, [selected.id]: "Applied" }));
       setSelected(null);
       toast.success("Applied to your draft. Re-analyze for fresh suggestions.");

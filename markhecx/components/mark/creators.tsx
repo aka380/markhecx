@@ -24,14 +24,15 @@ import { CreatorCard } from "./creator-card";
 import { CreatorSearch } from "./discovery/creator-search";
 import { DiscoveryFilters } from "./discovery/filters";
 import { CreatorGridSkeleton } from "./discovery/loading";
-import { useDiscoveryCreators } from "./discovery/use-discovery";
+import { useDiscoveryResource } from "./discovery/use-discovery";
 import { PublicCreatorProfile } from "./phase2/public-creator";
 
 export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
   const params = useSearchParams(),
     router = useRouter();
   const { state, ready } = useApp();
-  const pool = useDiscoveryCreators();
+  const discovery = useDiscoveryResource();
+  const pool = useMemo(() => discovery.data?.creators || [], [discovery.data]);
   const [filtersOpen, setFiltersOpen] = useState(false),
     [desktopFilters, setDesktopFilters] = useState(false),
     [more, setMore] = useState(false);
@@ -121,7 +122,7 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
         title="Discover Creators"
         description="Find creators, builders, designers, developers and experts across the MarkHECX ecosystem."
       >
-        <Badge>Sample community + local public profiles</Badge>
+        <Badge>Published creator profiles</Badge>
       </PageTitle>
       <div className="discover-search-area">
         <CreatorSearch
@@ -310,7 +311,11 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
           card’s explanation to see the evidence.
         </p>
       )}
-      {!ready ? (
+      {discovery.error ? (
+        <EmptyState title="Discovery unavailable" description={discovery.error}>
+          <Button onClick={discovery.retry}>Retry</Button>
+        </EmptyState>
+      ) : !ready || discovery.loading ? (
         <CreatorGridSkeleton />
       ) : privateView ? (
         <SignInGate
@@ -319,7 +324,7 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
               ? "Keep good company close"
               : "Discover your creative connections"
           }
-          description="Sign in locally to use your saved collection and profile-based recommendations."
+          description="Sign in to use your saved collection and profile-based recommendations."
         />
       ) : (
         <>
@@ -416,17 +421,24 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
         </>
       )}
       <p className="sample-footnote">
-        Sample profiles are fictional. Your published profile stays
-        browser-local. No live community, messaging delivery, or AI service is
-        connected.
+        Discovery uses published profiles. Missing information is never treated
+        as verified evidence.
       </p>
     </div>
   );
 }
 /** Retain existing Phase 1 links while using the shared Phase 2 public profile. */
 export function CreatorProfile({ id }: { id: string }) {
-  const c = creators.find((c) => c.id === id);
+  const discovery = useDiscoveryResource();
+  const sample = creators.find((c) => c.id === id);
+  const c = discovery.data?.creators.find((c) => c.id === id) || sample;
+  if (!sample && id !== "local" && discovery.loading)
+    return <CreatorGridSkeleton />;
   return (
-    <PublicCreatorProfile username={c?.username} localOnly={id === "local"} />
+    <PublicCreatorProfile
+      username={c?.username}
+      localOnly={id === "local"}
+      sampleMode={!!sample}
+    />
   );
 }

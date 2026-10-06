@@ -1,5 +1,6 @@
 "use client";
 import { useAPIResource } from "../api-resource";
+import { creators } from "@/lib/mark/data";
 import type { Creator } from "@/lib/mark/data";
 import type { Publication } from "@/lib/mark/models";
 import { useSearchParams } from "next/navigation";
@@ -18,18 +19,31 @@ import { CreatorGridSkeleton } from "../discovery/loading";
 export function PublicCreatorProfile({
   username,
   localOnly = false,
+  sampleMode = false,
 }: {
   username?: string;
   localOnly?: boolean;
+  sampleMode?: boolean;
 }) {
   const { state, ready, toggleSave } = useApp();
   const params = useSearchParams();
   const back = safeDiscoveryReturn(params.get("from"));
+  const sample =
+    sampleMode || params.get("sample") === "1"
+      ? creators.find((c) => c.username === username)
+      : undefined;
   const target = localOnly ? state.publication?.profile.username : username;
-  const resource = useAPIResource<{creator: Creator; publication: Publication}>(target ? `/creators/username/${encodeURIComponent(target)}` : null);
+  const resource = useAPIResource<{
+    creator: Creator;
+    publication: Publication;
+  }>(
+    target && !sample
+      ? `/creators/username/${encodeURIComponent(target)}`
+      : null,
+  );
   if (!ready || resource.loading) return <CreatorGridSkeleton />;
   const publication = resource.data?.publication;
-  const c = resource.data?.creator;
+  const c = sample || resource.data?.creator;
   if (!c)
     return (
       <EmptyState
@@ -49,6 +63,7 @@ export function PublicCreatorProfile({
     <>
       <Button
         className="btn-secondary"
+        disabled={!!sample}
         onClick={() => toggleSave(c.id)}
         aria-pressed={
           state.signedIn &&
@@ -69,7 +84,7 @@ export function PublicCreatorProfile({
       </Button>
       {hasPortfolio(c) && (
         <Action
-          href={`/u/${encodeURIComponent(c.username)}?from=${encodeURIComponent(back)}`}
+          href={`/u/${encodeURIComponent(c.username)}?from=${encodeURIComponent(back)}${sample ? "&sample=1" : ""}`}
         >
           View Portfolio
         </Action>

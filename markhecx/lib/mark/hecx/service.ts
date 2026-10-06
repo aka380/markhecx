@@ -118,10 +118,11 @@ async function bounded<T>(
 export function createHECXService(
   provider: AIProvider = MockHECXProvider,
   timeout = 8000,
+  resolveContext: typeof buildHECXContext = buildHECXContext,
 ) {
   return {
     async analyze(state: AppState, options: HecxOptions, signal?: AbortSignal) {
-      const context = buildHECXContext(state, options);
+      const context = resolveContext(state, options);
       const raw = await bounded(
         (s) => provider.analyze(context, s),
         signal,
@@ -147,6 +148,18 @@ export function createHECXService(
 }
 const localService = createHECXService();
 export const hecxService: ReturnType<typeof createHECXService> = {
-  analyze(state, options, signal) { return typeof window === "undefined" ? localService.analyze(state, options, signal) : api("/hecx/analyze", {method: "POST", body: options, signal}); },
-  suggest(action, source, signal) { return typeof window === "undefined" ? localService.suggest(action, source, signal) : api("/hecx/field", {method: "POST", body: {action, source}, signal}); }
+  analyze(state, options, signal) {
+    return typeof window === "undefined"
+      ? localService.analyze(state, options, signal)
+      : api("/hecx/analyze", { method: "POST", body: options, signal });
+  },
+  suggest(action, source, signal) {
+    return typeof window === "undefined"
+      ? localService.suggest(action, source, signal)
+      : api("/hecx/field", {
+          method: "POST",
+          body: { action, source },
+          signal,
+        });
+  },
 };

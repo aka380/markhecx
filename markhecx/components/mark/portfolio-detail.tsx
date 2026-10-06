@@ -1,4 +1,5 @@
 "use client";
+import { creators as samples } from "@/lib/mark/data";
 import { useDiscoveryCreators } from "./discovery/use-discovery";
 import { useApp, SignInGate } from "./provider";
 import { PageTitle, EmptyState, Action } from "./ui";
@@ -38,7 +39,8 @@ export function PortfolioPage({ id }: { id: string }) {
       </div>
     );
   }
-  const c = creators.find((x) => x.id === id);
+  const sample = samples.find(x => x.id === id);
+  const c = creators.find((x) => x.id === id) || sample;
   if (!c)
     return (
       <EmptyState
@@ -48,5 +50,5 @@ export function PortfolioPage({ id }: { id: string }) {
         <Action href="/creators">Discover creators</Action>
       </EmptyState>
     );
-  return <PublicPortfolio username={c.username} />;
+  return <PublicPortfolio username={c.username} sampleMode={!!sample} />;
 }

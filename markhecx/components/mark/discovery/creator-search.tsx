@@ -17,8 +17,8 @@ export function CreatorSearch({
   compact?: boolean;
 }) {
   const pool = useDiscoveryCreators();
-  const { state } = useApp();
-  const historyKey = `markhecx.searches.${state.signedIn ? "owner" : "guest"}`;
+  const { state, user } = useApp();
+  const historyKey = `markhecx.searches.${state.signedIn ? user?.id || "owner" : "guest"}`;
   const [draft, setDraft] = useState({ value, text: value }),
     [open, setOpen] = useState(false),
     [active, setActive] = useState(-1),

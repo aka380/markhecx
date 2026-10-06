@@ -149,9 +149,7 @@ function Editor({ id }: { id?: string }) {
           : saved;
       })
     ) {
-      toast.success(
-        publish ? "Campaign published." : "Campaign saved.",
-      );
+      toast.success(publish ? "Campaign published." : "Campaign saved.");
       router.push(`/campaigns/${draft.id}`);
     }
   }
@@ -161,7 +159,10 @@ function Editor({ id }: { id?: string }) {
       try {
         setSuggestion({
           action,
-          result: await api<ReturnType<typeof suggestCampaign>>("/hecx/campaign", {method: "POST", body: {action, campaign: draft}}),
+          result: await api<ReturnType<typeof suggestCampaign>>(
+            "/hecx/campaign",
+            { method: "POST", body: { action, campaign: draft } },
+          ),
           before: JSON.stringify(draft),
         });
       } catch {
@@ -187,8 +188,7 @@ function Editor({ id }: { id?: string }) {
       />
       {draft.status !== "Draft" && (
         <p className="small-note">
-          Saving changes updates the campaign. Review the details
-          before saving.
+          Saving changes updates the campaign. Review the details before saving.
         </p>
       )}
       <nav className="campaign-steps" aria-label="Campaign steps">
@@ -551,8 +551,8 @@ function Editor({ id }: { id?: string }) {
                 {step === 6 && (
                   <>
                     <p>
-                      Publishing makes this campaign visible in
-                      creator experience.
+                      Publishing makes this campaign visible in creator
+                      experience.
                     </p>
                     <Button
                       className="btn-primary"

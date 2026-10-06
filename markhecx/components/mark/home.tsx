@@ -159,8 +159,7 @@ export function HomePage() {
           ))}
         </div>
         <p className="sample-footnote">
-          A glimpse of the community · All creators shown are illustrative
-          samples.
+          Published creator profiles · Information is supplied by each creator.
         </p>
       </section>
     </div>

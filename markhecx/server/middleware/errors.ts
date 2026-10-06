@@ -1,5 +1,62 @@
-import type {ErrorRequestHandler,RequestHandler} from "express";
-import {ZodError} from "zod";
-export class ApiError extends Error {constructor(public status:number,public code:string,message:string){super(message);}}
-export const notFound:RequestHandler=(_req,_res,next)=>next(new ApiError(404,"not_found","This API route does not exist."));
-export const errorHandler:ErrorRequestHandler=(error,req,res,_next)=>{const status=error instanceof ApiError?error.status:error instanceof ZodError?400:error?.type==="entity.too.large"?413:error?.type==="entity.parse.failed"?400:error?.code===11000?409:500;const message=error instanceof ApiError?error.message:error instanceof ZodError?"Check the submitted fields.":status===409?"That record already exists.":status===400?"Invalid request body.":status===413?"Request is too large.":"The server could not complete this request.";console.error(JSON.stringify({requestId:res.locals.requestId,status,code:error instanceof ApiError?error.code:"request_error"}));res.status(status).json({error:{code:error instanceof ApiError?error.code:"request_error",message,requestId:res.locals.requestId,...(error instanceof ZodError?{fields:error.issues.map(i=>({path:i.path.join("."),message:i.message}))}:{})}});};
+import type { ErrorRequestHandler, RequestHandler } from "express";
+import { ZodError } from "zod";
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public code: string,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+export const notFound: RequestHandler = (_req, _res, next) =>
+  next(new ApiError(404, "not_found", "This API route does not exist."));
+export const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {
+  void _next; // Express requires four arguments to recognize error middleware.
+  const status =
+    error instanceof ApiError
+      ? error.status
+      : error instanceof ZodError
+        ? 400
+        : error?.type === "entity.too.large"
+          ? 413
+          : error?.type === "entity.parse.failed"
+            ? 400
+            : error?.code === 11000
+              ? 409
+              : 500;
+  const message =
+    error instanceof ApiError
+      ? error.message
+      : error instanceof ZodError
+        ? "Check the submitted fields."
+        : status === 409
+          ? "That record already exists."
+          : status === 400
+            ? "Invalid request body."
+            : status === 413
+              ? "Request is too large."
+              : "The server could not complete this request.";
+  console.error(
+    JSON.stringify({
+      requestId: res.locals.requestId,
+      status,
+      code: error instanceof ApiError ? error.code : "request_error",
+    }),
+  );
+  res.status(status).json({
+    error: {
+      code: error instanceof ApiError ? error.code : "request_error",
+      message,
+      requestId: res.locals.requestId,
+      ...(error instanceof ZodError
+        ? {
+            fields: error.issues.map((i) => ({
+              path: i.path.join("."),
+              message: i.message,
+            })),
+          }
+        : {}),
+    },
+  });
+};

@@ -19,7 +19,7 @@ export const information: Record<
       },
       {
         title: "Better work starts with better connections",
-        body: "Explore creators across disciplines, learn from their work, and find shared interests. This foundation begins with sample profiles; community features are planned for a future phase.",
+        body: "Explore creators across disciplines, learn from their work, and find shared interests. Published profiles and campaign collaborations connect creators with brands.",
       },
       {
         title: "Clarity with HECX",
@@ -49,8 +49,8 @@ export const information: Record<
         body: "Only upload content you have permission to use. Link to original sources and explain your role when presenting shared projects.",
       },
       {
-        title: "Understand this demo",
-        body: "Profiles shown in discovery are illustrative. Local sign-in is not secure authentication. Messages, notifications, payments, public publishing, and live AI are not connected in this demo.",
+        title: "Understand the platform",
+        body: "Discovery shows published creator profiles. Accounts, messages, notifications, and portfolios use the connected backend. Sample showcases are labeled separately. Payments and external generative AI are not connected.",
       },
     ],
   },
@@ -60,24 +60,24 @@ export const information: Record<
     description: "A few things to know about your MarkHECX workspace.",
     sections: [
       {
-        title: "How does local sign-in work?",
-        body: "Choose Sign In or Sign Up and enter a display name. This browser stores one local profile with no password or identity verification. Signing out hides your workspace and preserves the draft on this device.",
+        title: "How does sign-in work?",
+        body: "Create a Creator or Brand account with your name, email, and a password of at least 12 characters. Sign in to access your saved workspace. Sign out before switching to another account.",
       },
       {
         title: "How do I create a portfolio?",
-        body: "Open Create → Portfolio → Customize. Choose a template, toggle and reorder sections, and select your featured projects. Preview your draft and choose visibility before publishing locally.",
+        body: "Open Create → Portfolio → Customize. Choose a template, toggle and reorder sections, and select your featured projects. Preview your draft and choose visibility before publishing.",
       },
       {
         title: "Can I share my published portfolio?",
-        body: "Publishing creates a local version at /u/your-username. Public and unlisted links work within this browser. Cross-device storage and sharing require a future backend.",
+        body: "Publishing saves a snapshot at /u/your-username. Public portfolios appear in discovery. Unlisted portfolios are available by link. Private portfolios are visible only to the signed-in owner.",
       },
       {
         title: "Is HECX connected to AI?",
-        body: "No. Every response is a scripted demonstration. HECX has a replaceable service adapter for future AI integration. No prompts are sent to a model.",
+        body: "HECX runs on the backend using deterministic analysis and explainable matching. The provider abstraction supports future external AI integration; no external generative model is currently connected.",
       },
       {
         title: "Where is my data saved?",
-        body: "Profile details, saved creators, and portfolio drafts use this browser’s local storage. Clearing site data removes them. No cloud synchronization or backup is provided in Phase 1.",
+        body: "Profile details, projects, portfolios, campaigns, applications, invitations, and messages are stored in the connected database and scoped to your account.",
       },
     ],
   },

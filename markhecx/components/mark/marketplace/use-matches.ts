@@ -4,6 +4,13 @@ import { useAPIResource } from "../api-resource";
 import { useApp } from "../provider";
 export function useMatches() {
   const { state, user } = useApp();
-  const result = useAPIResource<{ matches: Record<string, CreatorMatch[]> }>(state.signedIn ? `/hecx/matches?account=${encodeURIComponent(user?.id || "")}` : null);
-  return {...result, matches: state.signedIn ? result.data?.matches || {} : {}};
+  const result = useAPIResource<{ matches: Record<string, CreatorMatch[]> }>(
+    state.signedIn
+      ? `/hecx/matches?account=${encodeURIComponent(user?.id || "")}`
+      : null,
+  );
+  return {
+    ...result,
+    matches: state.signedIn ? result.data?.matches || {} : {},
+  };
 }

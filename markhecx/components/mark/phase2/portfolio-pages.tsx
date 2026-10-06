@@ -2,11 +2,16 @@
 import { Eye, Pencil, Copy, Globe, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
+import { creators } from "@/lib/mark/data";
+import {
+  sampleProfile,
+  sampleProjects,
+  samplePortfolio,
+  hasPortfolio,
+} from "@/lib/mark/discovery";
 import { useAPIResource } from "../api-resource";
 import type { Publication } from "@/lib/mark/models";
-import {
-  safeDiscoveryReturn,
-} from "@/lib/mark/discovery";
+import { safeDiscoveryReturn } from "@/lib/mark/discovery";
 import { useApp, SignInGate } from "../provider";
 import { PageTitle, Card, Badge, Action, Button, EmptyState } from "../ui";
 import { visibleSections } from "@/lib/mark/domain";
@@ -91,7 +96,8 @@ export function PortfolioHome() {
       </div>
       <div className="info-line section-copy">
         <Globe size={17} />
-        Public portfolios appear in discovery. Unlisted portfolios are available by link; private portfolios are visible only to you.
+        Public portfolios appear in discovery. Unlisted portfolios are available
+        by link; private portfolios are visible only to you.
       </div>
     </div>
   );
@@ -118,15 +124,47 @@ export function PortfolioPreview() {
     </div>
   );
 }
-export function PublicPortfolio({ username }: { username: string }) {
+export function PublicPortfolio({
+  username,
+  sampleMode = false,
+}: {
+  username: string;
+  sampleMode?: boolean;
+}) {
   const { state, ready } = useApp();
   const params = useSearchParams();
   const back = safeDiscoveryReturn(params.get("from"));
-  const own = state.signedIn && state.publication?.profile.username === username;
-  const resource = useAPIResource<{publication: Publication}>(own ? null : `/public/portfolios/${encodeURIComponent(username)}`);
-  if (!ready || resource.loading) return <p role="status">Loading portfolio…</p>;
-  const pub = own ? state.publication : resource.data?.publication;
-  if (!pub) return <EmptyState title="This portfolio isn’t available." description={resource.error || "It may be private or unpublished."}><Button onClick={resource.retry}>Retry</Button><Action href="/">Back to MarkHECX</Action></EmptyState>;
+  const sample =
+    sampleMode || params.get("sample") === "1"
+      ? creators.find((c) => c.username === username && hasPortfolio(c))
+      : undefined;
+  const own =
+    state.signedIn && state.publication?.profile.username === username;
+  const resource = useAPIResource<{ publication: Publication }>(
+    own || sample ? null : `/public/portfolios/${encodeURIComponent(username)}`,
+  );
+  if (!ready || resource.loading)
+    return <p role="status">Loading portfolio…</p>;
+  const pub = sample
+    ? {
+        profile: sampleProfile(sample),
+        projects: sampleProjects(sample),
+        portfolio: samplePortfolio(sample),
+        publishedAt: "",
+      }
+    : own
+      ? state.publication
+      : resource.data?.publication;
+  if (!pub)
+    return (
+      <EmptyState
+        title="This portfolio isn’t available."
+        description={resource.error || "It may be private or unpublished."}
+      >
+        <Button onClick={resource.retry}>Retry</Button>
+        <Action href="/">Back to MarkHECX</Action>
+      </EmptyState>
+    );
 
   return (
     <div className="page-enter">
@@ -145,7 +183,8 @@ export function PublicPortfolio({ username }: { username: string }) {
           {pub.portfolio.status}
         </Badge>
         <span className="small-note">
-          Published version · /u/{pub.portfolio.username}
+          {sample ? "Sample showcase" : "Published version"} · /u/
+          {pub.portfolio.username}
         </span>
         {own && (
           <Action href="/portfolio/builder" secondary>
@@ -157,11 +196,9 @@ export function PublicPortfolio({ username }: { username: string }) {
           onClick={async () => {
             try {
               await navigator.clipboard.writeText(
-                `${location.origin}/u/${encodeURIComponent(pub.portfolio.username)}`,
+                `${location.origin}/u/${encodeURIComponent(pub.portfolio.username)}${sample ? "?sample=1" : ""}`,
               );
-              toast(
-                "Portfolio link copied.",
-              );
+              toast("Portfolio link copied.");
             } catch {
               toast.error(
                 "Clipboard unavailable. Copy the address from your browser.",

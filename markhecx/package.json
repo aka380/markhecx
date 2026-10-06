@@ -16,7 +16,8 @@
     "backend:build": "tsc -p server/tsconfig.json --noEmit && esbuild server/index.ts --bundle --platform=node --format=esm --packages=external --outfile=server/dist/index.mjs",
     "backend:start": "node --env-file-if-exists=server/.env server/dist/index.mjs",
     "test:regression": "node scripts/test-regression.mjs",
-    "test:backend": "NODE_ENV=test MONGODB_DATABASE=markhecx_test node --import tsx --test --test-concurrency=1 server/tests/*.test.ts"
+    "test:backend": "NODE_ENV=test MONGODB_DATABASE=markhecx_test node --import tsx --test --test-concurrency=1 server/tests/*.test.ts",
+    "backend:mongo:init": "node scripts/init-local-mongo.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

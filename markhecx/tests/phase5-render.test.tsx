@@ -22,9 +22,16 @@ import {
   brandService,
   applicationService,
 } from "../lib/mark/marketplace/services";
-import { ownerCreator, matchingService } from "../lib/mark/marketplace/matching";
+import {
+  ownerCreator,
+  matchingService,
+} from "../lib/mark/marketplace/matching";
 import { creators } from "../lib/mark/data";
-const globals = globalThis as unknown as { __app: unknown; __market: unknown; __resource?: (path: string) => unknown };
+const globals = globalThis as unknown as {
+  __app: unknown;
+  __market: unknown;
+  __resource?: (path: string) => unknown;
+};
 function setup(role: Actor["role"] = "Brand", signedIn = true) {
   const app = { ...structuredClone(emptyState), signedIn, accountType: role };
   app.profile.name = "Test Creator";
@@ -76,7 +83,22 @@ function setup(role: Actor["role"] = "Brand", signedIn = true) {
     toggleSave() {},
   };
   globals.__market = market;
-  globals.__resource = path => path?.startsWith("/creators") ? {creators} : path?.startsWith("/hecx/matches") ? {matches: Object.fromEntries(data.campaigns.map(c => [c.id, matchingService.matchCreatorsToCampaign(c, role === "Brand" ? creators : [ownerCreator(app)])]))} : undefined;
+  globals.__resource = (path) =>
+    path?.startsWith("/creators")
+      ? { creators: creators.map((c) => ({ ...c, source: "local" })) }
+      : path?.startsWith("/hecx/matches")
+        ? {
+            matches: Object.fromEntries(
+              data.campaigns.map((c) => [
+                c.id,
+                matchingService.matchCreatorsToCampaign(
+                  c,
+                  role === "Brand" ? creators : [ownerCreator(app)],
+                ),
+              ]),
+            ),
+          }
+        : undefined;
   return { market, c, app };
 }
 test("brand pages render shared management controls and real zero analytics", () => {

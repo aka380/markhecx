@@ -1,2 +1,136 @@
-import test from "node:test";import assert from "node:assert/strict";import {start,account} from "./helpers";import {blankCampaign} from "../../lib/mark/marketplace/models";import {blankBrand} from "../../lib/mark/marketplace/fixtures";
-test("6F messages persist and only participants can read them; application/message notifications are owned",async()=>{const t=await start();try{const b=await account(t.base,"Brand"),c=await account(t.base),stranger=await account(t.base);const command=(a:typeof b,body:unknown)=>fetch(t.base+"/marketplace/commands",{method:"POST",headers:a.headers,body:JSON.stringify(body)});await command(b,{type:"brand.save",input:{...blankBrand,id:b.user.id,name:"Brand",username:`brand-${crypto.randomUUID().slice(0,8)}`}});const campaign={...blankCampaign(b.user.id),title:"Message campaign",category:"Development",objective:"Education",description:"Teach React",brief:"Teach React",requirements:{...blankCampaign().requirements,requiredSkills:["React"]},deliverables:[{id:"d",type:"Tutorial",quantity:1,description:"Explain React",deadline:"",requirements:""}]};await command(b,{type:"campaign.save",input:campaign});await command(b,{type:"campaign.status",id:campaign.id,status:"Published"});await command(c,{type:"application.submit",input:{id:crypto.randomUUID(),campaignId:campaign.id,creatorId:c.user.id,message:"Apply",portfolio:"",projects:[],availability:"",terms:"",status:"Pending",submittedAt:"",updatedAt:"",demo:false}});let notes=await(await fetch(t.base+"/notifications",{headers:b.headers})).json();assert.ok(notes.notifications.some((n:{type:string})=>n.type==="application"));let r=await command(b,{type:"message.send",input:{campaignId:campaign.id,creatorId:c.user.id,text:"Hello creator"}});assert.equal(r.status,200);const state=await r.json();const thread=state.conversations[0];r=await fetch(t.base+`/conversations/${thread.id}/messages`,{headers:stranger.headers});assert.equal(r.status,404);r=await fetch(t.base+`/conversations/${thread.id}/messages`,{method:"POST",headers:c.headers,body:JSON.stringify({text:"Hello brand"})});assert.equal(r.status,200);assert.equal((await(await fetch(t.base+`/conversations/${thread.id}/messages`,{headers:b.headers})).json()).messages.length,2);notes=await(await fetch(t.base+"/notifications",{headers:c.headers})).json();const notification=notes.notifications[0];assert.equal((await fetch(t.base+`/notifications/${notification.id}/read`,{method:"PUT",headers:stranger.headers})).status,404);assert.equal((await fetch(t.base+`/notifications/${notification.id}/read`,{method:"PUT",headers:c.headers})).status,200);}finally{await t.close();}});
+import test from "node:test";
+import assert from "node:assert/strict";
+import { start, account } from "./helpers";
+import { blankCampaign } from "../../lib/mark/marketplace/models";
+import { blankBrand } from "../../lib/mark/marketplace/fixtures";
+test("6F messages persist and only participants can read them; application/message notifications are owned", async () => {
+  const t = await start();
+  try {
+    const b = await account(t.base, "Brand"),
+      c = await account(t.base),
+      stranger = await account(t.base);
+    const command = (a: typeof b, body: unknown) =>
+      fetch(t.base + "/marketplace/commands", {
+        method: "POST",
+        headers: a.headers,
+        body: JSON.stringify(body),
+      });
+    await command(b, {
+      type: "brand.save",
+      input: {
+        ...blankBrand,
+        id: b.user.id,
+        name: "Brand",
+        username: `brand-${crypto.randomUUID().slice(0, 8)}`,
+      },
+    });
+    const campaign = {
+      ...blankCampaign(b.user.id),
+      title: "Message campaign",
+      category: "Development",
+      objective: "Education",
+      description: "Teach React",
+      brief: "Teach React",
+      requirements: {
+        ...blankCampaign().requirements,
+        requiredSkills: ["React"],
+      },
+      deliverables: [
+        {
+          id: "d",
+          type: "Tutorial",
+          quantity: 1,
+          description: "Explain React",
+          deadline: "",
+          requirements: "",
+        },
+      ],
+    };
+    await command(b, { type: "campaign.save", input: campaign });
+    await command(b, {
+      type: "campaign.status",
+      id: campaign.id,
+      status: "Published",
+    });
+    await command(c, {
+      type: "application.submit",
+      input: {
+        id: crypto.randomUUID(),
+        campaignId: campaign.id,
+        creatorId: c.user.id,
+        message: "Apply",
+        portfolio: "",
+        projects: [],
+        availability: "",
+        terms: "",
+        status: "Pending",
+        submittedAt: "",
+        updatedAt: "",
+        demo: false,
+      },
+    });
+    let notes = await (
+      await fetch(t.base + "/notifications", { headers: b.headers })
+    ).json();
+    assert.ok(
+      notes.notifications.some(
+        (n: { type: string }) => n.type === "application",
+      ),
+    );
+    let r = await command(b, {
+      type: "message.send",
+      input: {
+        campaignId: campaign.id,
+        creatorId: c.user.id,
+        text: "Hello creator",
+      },
+    });
+    assert.equal(r.status, 200);
+    const state = await r.json();
+    const thread = state.conversations[0];
+    r = await fetch(t.base + `/conversations/${thread.id}/messages`, {
+      headers: stranger.headers,
+    });
+    assert.equal(r.status, 404);
+    r = await fetch(t.base + `/conversations/${thread.id}/messages`, {
+      method: "POST",
+      headers: c.headers,
+      body: JSON.stringify({ text: "Hello brand" }),
+    });
+    assert.equal(r.status, 200);
+    assert.equal(
+      (
+        await (
+          await fetch(t.base + `/conversations/${thread.id}/messages`, {
+            headers: b.headers,
+          })
+        ).json()
+      ).messages.length,
+      2,
+    );
+    notes = await (
+      await fetch(t.base + "/notifications", { headers: c.headers })
+    ).json();
+    const notification = notes.notifications[0];
+    assert.equal(
+      (
+        await fetch(t.base + `/notifications/${notification.id}/read`, {
+          method: "PUT",
+          headers: stranger.headers,
+        })
+      ).status,
+      404,
+    );
+    assert.equal(
+      (
+        await fetch(t.base + `/notifications/${notification.id}/read`, {
+          method: "PUT",
+          headers: c.headers,
+        })
+      ).status,
+      200,
+    );
+  } finally {
+    await t.close();
+  }
+});

@@ -66,12 +66,15 @@ function ProjectEditorForm({ initial }: { initial: Project }) {
       setTab(errors.title ? "Overview" : errors.media ? "Media" : "Details");
       return;
     }
-    if (!(await update((s) => ({
-      ...s,
-      projects: s.projects.some((p) => p.id === next.id)
-        ? s.projects.map((p) => (p.id === next.id ? next : p))
-        : [next, ...s.projects],
-    })))) return;
+    if (
+      !(await update((s) => ({
+        ...s,
+        projects: s.projects.some((p) => p.id === next.id)
+          ? s.projects.map((p) => (p.id === next.id ? next : p))
+          : [next, ...s.projects],
+      })))
+    )
+      return;
     log(
       `${status === "Draft" ? "Saved draft" : "Added project"}: ${next.title}`,
     );
@@ -271,9 +274,9 @@ function ProjectEditorForm({ initial }: { initial: Project }) {
           <TabsContent value="Media">
             <div className="stack">
               <p className="small-note">
-                Images are saved with your project. Add up to three PNG, JPEG, or WebP
-                images, each under 300 KB. Video links open on their original
-                site.
+                Images are saved with your project. Add up to three PNG, JPEG,
+                or WebP images, each under 300 KB. Video links open on their
+                original site.
               </p>
               <label className="upload-label">
                 <Upload size={18} />

@@ -313,9 +313,7 @@ export function InviteCreator({
                           ),
                         )
                       ) {
-                        toast.success(
-                          "Invitation sent.",
-                        );
+                        toast.success("Invitation sent.");
                         setOpen(false);
                         setMessage("");
                         setReview(false);

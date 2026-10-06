@@ -96,28 +96,31 @@ function CreateContent() {
         </Card>
       ) : (
         <Card className="panel create-form">
-          <Badge>Saved to your local profile</Badge>
+          <Badge>Saved to your profile</Badge>
           <form
             className="form-grid section-copy"
             onSubmit={async (e) => {
               e.preventDefault();
               if (!title.trim()) return;
-              if (!(await update((s) => ({
-                ...s,
-                profile: {
-                  ...s.profile,
-                  achievements: [
-                    ...s.profile.achievements,
-                    {
-                      id: crypto.randomUUID(),
-                      title: title.trim(),
-                      description: detail.trim(),
-                    },
-                  ],
-                },
-              })))) return;
+              if (
+                !(await update((s) => ({
+                  ...s,
+                  profile: {
+                    ...s.profile,
+                    achievements: [
+                      ...s.profile.achievements,
+                      {
+                        id: crypto.randomUUID(),
+                        title: title.trim(),
+                        description: detail.trim(),
+                      },
+                    ],
+                  },
+                })))
+              )
+                return;
               log(`Added ${type.toLowerCase()}: ${title.trim()}`);
-              toast.success(`${type} saved locally.`);
+              toast.success(`${type} saved.`);
               router.push("/profile");
             }}
           >

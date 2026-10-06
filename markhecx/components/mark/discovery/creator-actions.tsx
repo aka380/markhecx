@@ -11,6 +11,7 @@ export function CreatorActions({
   campaignId?: string;
 }) {
   const { state, openAuth } = useApp();
+  if (creator.source !== "local") return <p className="small-note">Sample showcase · no account to contact</p>;
   return (
     <div className="creator-contact-actions">
       {!state.signedIn ? (

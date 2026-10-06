@@ -43,7 +43,7 @@ function Messages({
   creatorId: string;
   username: string;
 }) {
-  const { data, actor, change } = useMarketplace();
+  const { data, actor, change, refresh } = useMarketplace();
   const pool = useDiscoveryCreators();
   const [selected, setSelected] = useState(conversationId),
     [campaign, setCampaign] = useState(campaignId),
@@ -52,7 +52,13 @@ function Messages({
     ),
     [text, setText] = useState("");
   const conversations = messageService.list(data, actor);
-  const current = conversations.find((c) => c.id === selected) || conversations.find(c => c.campaignId === campaign && c.creatorId === (actor.role === "Creator" ? actor.id : creator));
+  const current =
+    conversations.find((c) => c.id === selected) ||
+    conversations.find(
+      (c) =>
+        c.campaignId === campaign &&
+        c.creatorId === (actor.role === "Creator" ? actor.id : creator),
+    );
   const campaigns = data.campaigns.filter((c) =>
     actor.role === "Brand"
       ? owns(actor, c)
@@ -77,10 +83,12 @@ function Messages({
   return (
     <div className="page-enter">
       <PageTitle
-        eyebrow="MESSAGES / LOCAL CONVERSATIONS"
+        eyebrow="MESSAGES / CONVERSATIONS"
         title="Turn interest into a conversation."
         description="Messages are shared with the other participant. Refresh to check for new replies."
-      />
+      >
+        <Button onClick={refresh}>Refresh messages</Button>
+      </PageTitle>
       <div className="campaign-editor-grid">
         <Card className="panel">
           <h2>Conversations</h2>
@@ -88,6 +96,8 @@ function Messages({
             variant="outline"
             onClick={() => {
               setSelected("");
+              setCampaign("");
+              setCreator("");
               setText("");
             }}
           >
@@ -96,7 +106,7 @@ function Messages({
           {conversations.map((c) => (
             <Button
               className="conversation-link"
-              variant={c.id === selected ? "secondary" : "ghost"}
+              variant={c.id === current?.id ? "secondary" : "ghost"}
               key={c.id}
               onClick={() => {
                 setSelected(c.id);
@@ -212,8 +222,8 @@ function Messages({
                 </Button>
                 <p className="small-note">
                   Switch account type to inspect the other side of a
-                  conversation with a creator. Sample creators do not
-                  send replies.
+                  conversation with a creator. Sample creators do not send
+                  replies.
                 </p>
               </form>
             ) : (

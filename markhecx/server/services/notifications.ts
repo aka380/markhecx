@@ -1,5 +1,95 @@
-import type {ClientSession} from "mongodb";import type {MarketplaceState} from "../../lib/mark/marketplace/models";import {notifications,Notification} from "../models/notifications";
-export async function notifyChanges(before:MarketplaceState,after:MarketplaceState,actorId:string,session:ClientSession){const pending:Notification[]=[];const add=(id:string,userId:string,type:Notification["type"],message:string,href:string)=>{if(userId!==actorId)pending.push({_id:id,userId,type,message,href,createdAt:new Date().toISOString(),readAt:null});};for(const a of after.applications){const old=before.applications.find(x=>x.id===a.id);if(!old){const c=after.campaigns.find(c=>c.id===a.campaignId);if(c)add(`application-${a.id}`,c.brandId,"application",`New application for ${c.title}.`,"/applications");}else if(old.status!==a.status){add(`application-${a.id}-${a.status}-${a.updatedAt}`,a.creatorId,"application",`Your application is now ${a.status}.`,"/applications");}}
-for(const i of after.invitations){const old=before.invitations.find(x=>x.id===i.id);const c=after.campaigns.find(c=>c.id===i.campaignId);if(!old)add(`invitation-${i.id}`,i.creatorId,"invitation",`You were invited to ${c?.title||"a campaign"}.`,"/invitations");else if(old.status!==i.status&&c)add(`invitation-${i.id}-${i.status}`,i.creatorId===actorId?c.brandId:i.creatorId,"invitation",`Invitation status: ${i.status}.`,"/invitations");}
-for(const thread of after.conversations){const old=before.conversations.find(x=>x.id===thread.id);for(const message of thread.messages.filter(m=>!old?.messages.some(x=>x.id===m.id)))add(`message-${message.id}`,message.sender==="Brand"?thread.creatorId:thread.brandId,"message",`New message about ${thread.campaignTitle||"your campaign"}.`,`/messages?conversation=${thread.id}`);}
-for(const n of pending)await notifications.updateOne({_id:n._id},{$setOnInsert:n},{upsert:true,session});}
+import type { ClientSession } from "mongodb";
+import type { MarketplaceState } from "../../lib/mark/marketplace/models";
+import { notifications, Notification } from "../models/notifications";
+export async function notifyChanges(
+  before: MarketplaceState,
+  after: MarketplaceState,
+  actorId: string,
+  session: ClientSession,
+) {
+  const pending: Notification[] = [];
+  const add = (
+    id: string,
+    userId: string,
+    type: Notification["type"],
+    message: string,
+    href: string,
+  ) => {
+    if (userId !== actorId)
+      pending.push({
+        _id: id,
+        userId,
+        type,
+        message,
+        href,
+        createdAt: new Date().toISOString(),
+        readAt: null,
+      });
+  };
+  for (const a of after.applications) {
+    const old = before.applications.find((x) => x.id === a.id);
+    if (!old) {
+      const c = after.campaigns.find((c) => c.id === a.campaignId);
+      if (c)
+        add(
+          `application-${a.id}`,
+          c.brandId,
+          "application",
+          `New application for ${c.title}.`,
+          "/applications",
+        );
+    } else if (old.status !== a.status) {
+      const c =
+        after.campaigns.find((c) => c.id === a.campaignId) ||
+        a.campaignSnapshot;
+      const recipient = a.creatorId === actorId ? c?.brandId : a.creatorId;
+      if (recipient)
+        add(
+          `application-${a.id}-${a.status}-${a.updatedAt}`,
+          recipient,
+          "application",
+          `Application status: ${a.status}.`,
+          "/applications",
+        );
+    }
+  }
+  for (const i of after.invitations) {
+    const old = before.invitations.find((x) => x.id === i.id);
+    const c = after.campaigns.find((c) => c.id === i.campaignId);
+    if (!old)
+      add(
+        `invitation-${i.id}`,
+        i.creatorId,
+        "invitation",
+        `You were invited to ${c?.title || "a campaign"}.`,
+        "/invitations",
+      );
+    else if (old.status !== i.status && c)
+      add(
+        `invitation-${i.id}-${i.status}`,
+        i.creatorId === actorId ? c.brandId : i.creatorId,
+        "invitation",
+        `Invitation status: ${i.status}.`,
+        "/invitations",
+      );
+  }
+  for (const thread of after.conversations) {
+    const old = before.conversations.find((x) => x.id === thread.id);
+    for (const message of thread.messages.filter(
+      (m) => !old?.messages.some((x) => x.id === m.id),
+    ))
+      add(
+        `message-${message.id}`,
+        message.sender === "Brand" ? thread.creatorId : thread.brandId,
+        "message",
+        `New message about ${thread.campaignTitle || "your campaign"}.`,
+        `/messages?conversation=${thread.id}`,
+      );
+  }
+  for (const n of pending)
+    await notifications.updateOne(
+      { _id: n._id },
+      { $setOnInsert: n },
+      { upsert: true, session },
+    );
+}
