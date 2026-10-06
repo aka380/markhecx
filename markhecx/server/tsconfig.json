@@ -1,0 +1,1 @@
+{"extends":"../tsconfig.json","compilerOptions":{"noEmit":true,"types":["node"],"incremental":false},"include":["**/*.ts","../lib/mark/**/*.ts"],"exclude":["dist","../node_modules"]}
