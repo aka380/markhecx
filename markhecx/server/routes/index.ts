@@ -8,3 +8,6 @@ api.use("/auth",authRoutes);
 
 import {creatorRoutes} from "./creators";
 api.use(creatorRoutes);
+
+import {marketRoutes} from "./marketplace";
+api.use(marketRoutes);
