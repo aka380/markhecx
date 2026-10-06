@@ -11,3 +11,6 @@ api.use(creatorRoutes);
 
 import {marketRoutes} from "./marketplace";
 api.use(marketRoutes);
+
+import {hecxRoutes} from "./hecx";
+api.use("/hecx",hecxRoutes);
