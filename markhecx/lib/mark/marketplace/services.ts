@@ -92,6 +92,28 @@ export function campaignErrors(c: Campaign, publish = true): string[] {
       );
   return [...new Set(errors)];
 }
+export function briefReadiness(c: Campaign) {
+  const checks = [
+    ["Campaign goal", !!(c.objective && c.brief.trim())],
+    ["Content type", !!c.contentType?.trim()],
+    ["Creative style", !!c.creativeDirection.trim()],
+    ["Format", !!c.format?.trim()],
+    ["Aspect ratio", !!c.aspectRatio?.trim()],
+    ["Creator requirements", !!(c.requirements.requiredSkills.length || c.requirements.creatorIdentity || c.requirements.categories.length)],
+    ["Required tools", !!c.tools?.length],
+    ["Platforms", !!c.platforms.length],
+    ["Deliverables", !!c.deliverables.length && c.deliverables.every((d) => d.type.trim() && d.description.trim())],
+    ["Timeline", !!(c.startDate && c.endDate && c.applicationDeadline)],
+    ["Budget", c.budget !== null],
+    ["Commercial rights", !!c.commercialUse && c.commercialUse !== "Unspecified"],
+  ] as const;
+  const complete = checks.filter(([, ready]) => ready).length;
+  return {
+    score: Math.round((complete / checks.length) * 100),
+    complete: checks.filter(([, ready]) => ready).map(([label]) => label),
+    missing: checks.filter(([, ready]) => !ready).map(([label]) => label),
+  };
+}
 function event(
   s: MarketplaceState,
   c: Campaign,

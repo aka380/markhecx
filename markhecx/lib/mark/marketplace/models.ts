@@ -188,6 +188,7 @@ export interface MatchFactor {
   weight: number;
   value: number | null;
   evidence: string;
+  blocking?: boolean;
 }
 export interface CreatorMatch {
   creatorId: string;

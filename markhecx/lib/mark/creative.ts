@@ -10,6 +10,12 @@ export const creativeSchema = z.object({
   aspectRatio: z.string().max(50).default(""),
   platforms: values,
   workflow: z.string().max(2000).default(""),
+  workflowSteps: values,
+  humanContribution: z.string().max(1200).default(""),
+  sourceAssets: z.string().max(1200).default(""),
+  toolEvidence: values,
+  workflowEvidence: values,
+  pastWorkEvidence: values,
   commercialUse: z
     .enum(["Unspecified", "Available", "Restricted"])
     .default("Unspecified"),
@@ -28,9 +34,25 @@ export function mergeCreativeEvidence(
   );
   if (!evidence.length) return undefined;
   const unique = (
-    key: "tools" | "models" | "contentTypes" | "formats" | "platforms",
+    key:
+      | "tools"
+      | "models"
+      | "contentTypes"
+      | "formats"
+      | "platforms"
+      | "workflowSteps"
+      | "toolEvidence"
+      | "workflowEvidence"
+      | "pastWorkEvidence",
   ) => [...new Set(evidence.flatMap((item) => item[key]).filter(Boolean))];
-  const first = (key: "specialization" | "aspectRatio" | "workflow") =>
+  const first = (
+    key:
+      | "specialization"
+      | "aspectRatio"
+      | "workflow"
+      | "humanContribution"
+      | "sourceAssets",
+  ) =>
     evidence.find((item) => item[key].trim())?.[key] || "";
   const commercial = evidence.find(
     (item) => item.commercialUse !== "Unspecified",
@@ -44,6 +66,12 @@ export function mergeCreativeEvidence(
     aspectRatio: first("aspectRatio"),
     platforms: unique("platforms"),
     workflow: first("workflow"),
+    workflowSteps: unique("workflowSteps"),
+    humanContribution: first("humanContribution"),
+    sourceAssets: first("sourceAssets"),
+    toolEvidence: unique("toolEvidence"),
+    workflowEvidence: unique("workflowEvidence"),
+    pastWorkEvidence: unique("pastWorkEvidence"),
     commercialUse: commercial || "Unspecified",
     minimumBudget: profile?.minimumBudget ?? null,
     currency: profile?.currency || "USD",

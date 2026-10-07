@@ -51,8 +51,11 @@ export type RecommendationLevel =
   | "More evidence needed";
 
 export function recommendationLevel(
-  match: Pick<CreatorMatch, "score" | "coverage">,
+  match: Pick<CreatorMatch, "score" | "coverage"> &
+    Partial<Pick<CreatorMatch, "factors">>,
 ): RecommendationLevel {
+  if (match.factors?.some((factor) => factor.blocking && factor.value === 0))
+    return "Low requirement fit";
   if (match.score === null || match.coverage < 50) return "More evidence needed";
   if (match.score >= 85) return "Strongly recommended";
   if (match.score >= 70) return "Recommended";
@@ -71,7 +74,8 @@ export function scoreCreator(
     weight: number,
     value: number | null,
     evidence: string,
-  ) => f.push({ key, label, weight, value, evidence });
+    blocking = false,
+  ) => f.push({ key, label, weight, value, evidence, blocking });
   const overlap = (wanted: string[], actual: string[]) =>
     wanted.filter((w) => actual.some((a) => normalize(a) === normalize(w)));
   if (r.requiredSkills.length) {
@@ -82,6 +86,7 @@ export function scoreCreator(
       35,
       c.skills.length ? found.length / r.requiredSkills.length : null,
       `${found.length}/${r.requiredSkills.length} required skills listed${found.length ? `: ${found.join(", ")}` : ""}. Missing evidence: ${r.requiredSkills.filter((x) => !found.includes(x)).join(", ") || "none"}.`,
+      true,
     );
   }
   if (r.preferredSkills.length) {
@@ -155,6 +160,7 @@ export function scoreCreator(
       c.publicPortfolio === false
         ? "No public portfolio available."
         : "Public portfolio available in the creator dataset.",
+      true,
     );
   if (r.experienceLevel)
     add(
@@ -203,6 +209,7 @@ export function scoreCreator(
         10,
         actual.length ? found.length / wanted.length : null,
         `Requested: ${wanted.join(", ")}. Self-declared: ${actual.join(", ") || "Evidence unavailable"}.`,
+        key === "tools",
       );
     }
   if (campaign.commercialUse && campaign.commercialUse !== "Unspecified")
@@ -214,6 +221,7 @@ export function scoreCreator(
         ? Number(c.creative.commercialUse === campaign.commercialUse)
         : null,
       `Requested: ${campaign.commercialUse}. Self-declared: ${c.creative?.commercialUse || "Evidence unavailable"}; confirm licensing directly.`,
+      true,
     );
   if (campaign.budget !== null)
     add(

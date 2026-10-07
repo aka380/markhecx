@@ -1380,6 +1380,13 @@ function Matches({ id }: { id: string }) {
                         : `${m.score}% requirement match`}
                     </Badge>
                     <strong>{recommendationLevel(m)}</strong>
+                    {m.factors.some(
+                      (factor) => factor.blocking && factor.value === 0,
+                    ) && (
+                      <p className="form-error">
+                        A mandatory requirement is not met. Review the factor breakdown before inviting.
+                      </p>
+                    )}
                     <p>{m.coverage}% evidence coverage</p>
                     <p>
                       {m.strengths[0] || "No positive factor evidence yet."}

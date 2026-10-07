@@ -62,6 +62,46 @@ export function CreativeFields({
         />
       </label>
       <label className="field">
+        Workflow steps
+        <Input
+          defaultValue={v.workflowSteps.join(", ")}
+          placeholder="Concept, generate, composite, edit, grade"
+          onBlur={(e) => patch({ workflowSteps: e.target.value.split(",").map((x) => x.trim()).filter(Boolean).slice(0, 30) })}
+        />
+      </label>
+      <label className="field">
+        Your human contribution
+        <Textarea
+          value={v.humanContribution}
+          maxLength={1200}
+          placeholder="Describe your direction, editing, compositing, sound or other work."
+          onChange={(e) => patch({ humanContribution: e.target.value })}
+        />
+      </label>
+      <label className="field">
+        Source assets
+        <Textarea
+          value={v.sourceAssets}
+          maxLength={1200}
+          placeholder="Describe supplied footage, product images, licensed assets or original inputs."
+          onChange={(e) => patch({ sourceAssets: e.target.value })}
+        />
+      </label>
+      {([
+        ["toolEvidence", "Tool evidence", "Generation screenshots or source-file links"],
+        ["workflowEvidence", "Workflow evidence", "Process breakdown or version-history links"],
+        ["pastWorkEvidence", "Past-work evidence", "Published work or client-reference links"],
+      ] as const).map(([key, label, placeholder]) => (
+        <label className="field" key={key}>
+          {label}
+          <Input
+            defaultValue={v[key].join(", ")}
+            placeholder={placeholder}
+            onBlur={(e) => patch({ [key]: e.target.value.split(",").map((x) => x.trim()).filter(Boolean).slice(0, 30) })}
+          />
+        </label>
+      ))}
+      <label className="field">
         Commercial use
         <Choice
           label="Commercial use"
@@ -95,8 +135,7 @@ export function CreativeFields({
         }
       />
       <p className="small-note">
-        Only list tools and workflows you use. These declarations are not
-        independently verified.
+        Claims remain creator-declared and not independently verified. Evidence references are shown separately so brands can inspect what was supplied.
       </p>
     </fieldset>
   );

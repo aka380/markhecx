@@ -14,6 +14,7 @@ import {
 import {
   campaignService,
   campaignErrors,
+  briefReadiness,
 } from "@/lib/mark/marketplace/services";
 import {
   campaignHECXActions,
@@ -76,6 +77,7 @@ function Editor({ id }: { id?: string }) {
       before: string;
     } | null>(null),
     [busy, setBusy] = useState(false);
+  const readiness = briefReadiness(draft);
   if (id && !existing)
     return (
       <EmptyState
@@ -655,6 +657,17 @@ function Editor({ id }: { id?: string }) {
         </Card>
         <Card className="panel hecx-campaign-tools">
           <Badge tone="purple">HECX / BRIEF ASSISTANT</Badge>
+          <div className="brief-readiness">
+            <strong>{readiness.score}% brief readiness</strong>
+            <div className="readiness-track" aria-label={`${readiness.score}% brief readiness`}>
+              <span style={{ width: `${readiness.score}%` }} />
+            </div>
+            <p className="small-note">
+              {readiness.missing.length
+                ? `Add: ${readiness.missing.join(", ")}.`
+                : "The brief covers every matching input. Review it before publishing."}
+            </p>
+          </div>
           <h2>Clarity before commitment.</h2>
           <p>
             Suggestions use only your supplied campaign information. Review

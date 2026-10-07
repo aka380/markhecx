@@ -81,7 +81,11 @@ export function CreatorProfileContent({
       {p.creative && (
         <Card className="panel">
           <h2>Creative capabilities</h2>
-          <Badge>Self-declared · not independently verified</Badge>
+          <Badge>
+            {p.creative.toolEvidence.length || p.creative.workflowEvidence.length || p.creative.pastWorkEvidence.length
+              ? "Evidence submitted"
+              : "Creator declared"}
+          </Badge>
           <p>{p.creative.specialization}</p>
           {(
             ["tools", "models", "contentTypes", "platforms", "formats"] as const
@@ -94,6 +98,8 @@ export function CreatorProfileContent({
             ) : null,
           )}
           <p>{p.creative.workflow}</p>
+          {!!p.creative.workflowSteps.length && <p><strong>Workflow:</strong> {p.creative.workflowSteps.join(" → ")}</p>}
+          {p.creative.humanContribution && <p><strong>Human contribution:</strong> {p.creative.humanContribution}</p>}
           <p>
             Commercial use: {p.creative.commercialUse}. Confirm project
             licensing directly.

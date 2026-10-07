@@ -29,7 +29,11 @@ export function PublicProjectDialog({
                   Aspect ratio:{" "}
                   {project.creative.aspectRatio || "Not specified"}
                 </p>
-                <p>Self-declared evidence; not independently verified.</p>
+                <p>
+                  {project.creative.toolEvidence.length || project.creative.workflowEvidence.length || project.creative.pastWorkEvidence.length
+                    ? "Evidence submitted · review the supplied references below."
+                    : "Creator declared · supporting evidence not submitted."}
+                </p>
                 <p>{project.creative.specialization}</p>
                 <p>
                   Tools:{" "}
@@ -41,8 +45,14 @@ export function PublicProjectDialog({
                     "Evidence unavailable."}
                 </p>
                 <p>{project.creative.workflow}</p>
+                {!!project.creative.workflowSteps.length && <p>Steps: {project.creative.workflowSteps.join(" → ")}</p>}
+                {project.creative.humanContribution && <p><strong>Human contribution:</strong> {project.creative.humanContribution}</p>}
+                {project.creative.sourceAssets && <p><strong>Source assets:</strong> {project.creative.sourceAssets}</p>}
                 <p>Formats: {project.creative.formats.join(", ")}</p>
                 <p>Commercial use: {project.creative.commercialUse}</p>
+                {[...project.creative.toolEvidence, ...project.creative.workflowEvidence, ...project.creative.pastWorkEvidence].map((evidence) => (
+                  <p key={evidence} className="small-note">Evidence supplied: {evidence}</p>
+                ))}
               </section>
             )}
 
