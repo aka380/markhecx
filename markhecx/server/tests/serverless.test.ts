@@ -51,7 +51,7 @@ test('serverless entry supports persistent sessions, CSRF and shared rate counte
     assert.equal((await b.increment('client')).totalHits,1);
   } finally {
     await users.deleteOne({_id:id}); await sessions.deleteMany({userId:id}); await creatorDocuments.deleteOne({_id:id});
-    await db.collection('rate_limits').deleteMany({_id:{$regex:`^${prefix}:`}});
+    await db.collection<{ _id: string }>('rate_limits').deleteMany({_id:{$regex:`^${prefix}:`}});
     await new Promise<void>(r=>server.close(()=>r())); await client.close();
   }
 });

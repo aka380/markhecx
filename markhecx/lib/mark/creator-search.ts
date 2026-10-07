@@ -27,6 +27,7 @@ export function searchable(c: Creator) {
     c.username,
     "@" + c.username,
     c.identity,
+    c.bio,
     c.category,
     ...creatorCategories(c),
     ...c.skills,
@@ -37,7 +38,11 @@ export function searchable(c: Creator) {
     ...(c.creative?.contentTypes || []),
     ...(c.creative?.platforms || []),
     ...(c.creative?.formats || []),
-    ...c.projects.flatMap((p) => [p.name, p.detail]),
+    ...c.projects.flatMap((p) => [p.name, p.detail,
+      p.creative?.specialization || "", ...(p.creative?.tools || []),
+      ...(p.creative?.models || []), ...(p.creative?.contentTypes || []),
+      ...(p.creative?.platforms || []), ...(p.creative?.formats || []),
+    ]),
   ].join(" ");
 }
 export function searchCreatorPool(pool: Creator[], query: string) {

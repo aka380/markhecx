@@ -54,9 +54,8 @@ export function mergeCreativeEvidence(
       | "sourceAssets",
   ) =>
     evidence.find((item) => item[key].trim())?.[key] || "";
-  const commercial = evidence.find(
-    (item) => item.commercialUse !== "Unspecified",
-  )?.commercialUse;
+  // Rights for a past project do not establish rights for a new engagement.
+  const commercial = profile?.commercialUse;
   return {
     specialization: first("specialization"),
     tools: unique("tools"),

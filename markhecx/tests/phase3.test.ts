@@ -334,3 +334,23 @@ test("discovery return paths cannot redirect outside discovery", () => {
   ])
     assert.equal(safeDiscoveryReturn(value), "/creators");
 });
+
+
+test("AI discovery filters apply equally to samples and published project capabilities", () => {
+  const pool = creators.filter(c => c.source === "sample");
+  const candidate = pool.find(c => c.creative?.tools.length)!;
+  assert.ok(candidate);
+  for (const [key, value] of [
+    ["tool", candidate.creative!.tools[0]],
+    ["specialization", candidate.creative!.specialization],
+    ["contentType", candidate.creative!.contentTypes[0]],
+    ["platform", candidate.creative!.platforms[0]],
+    ["format", candidate.creative!.formats[0]],
+  ]) {
+    if (!value) continue;
+    const filters = readDiscoveryQuery(new URLSearchParams({view:"All Creators", [key]: value}), false);
+    assert.ok(runDiscovery(pool, filters, false, [], null).results.some(c => c.id === candidate.id), key);
+    const impossible = readDiscoveryQuery(new URLSearchParams({view:"All Creators", [key]: "not-a-real-capability"}), false);
+    assert.equal(runDiscovery(pool, impossible, false, [], null).results.length, 0, key);
+  }
+});

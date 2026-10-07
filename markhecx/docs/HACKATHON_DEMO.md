@@ -12,7 +12,7 @@
 
 ## Data model
 
-`Creator` includes identity, skills, categories, projects and optional `CreativeCapabilities`. Capabilities record tools, models, specialization, content types, formats, aspect ratio, platforms, workflow steps, human contribution, source assets, evidence references, commercial-use status and a self-declared minimum budget/currency. Published projects may contribute capabilities. Evidence references and sample badges are not third-party verification.
+`Creator` includes identity, skills, categories, projects and optional `CreativeCapabilities`. Capabilities record tools, models, specialization, content types, formats, aspect ratio, platforms, workflow steps, human contribution, source assets, evidence references, commercial-use status and a self-declared minimum budget/currency. Published projects contribute searchable tools, models, content types and formats. Project-specific commercial-use claims never automatically grant rights for a new engagement; matching uses the creator’s explicit profile-level declaration. Evidence references and sample badges are not third-party verification.
 
 `Campaign` includes title, brief, objective, creative direction, skill/identity/category requirements, tools, content type, format, aspect ratio, platforms, commercial use, budget/currency, dates and deliverables. Drafts remain editable; the studio itself does not publish or contact anybody.
 
@@ -27,3 +27,18 @@ Vercel runs Next.js and the existing Express API together at `/api/v1`. Producti
 ## Validation
 
 Production build and regression suite cover the app. New regression checks distinguish an unknown aspect ratio from a mismatch and reject comparison recommendations for empty evidence, duplicate candidates, ties and blocked requirements. Browser checks cover sample loading, factor tables and mobile overflow. Run `npm run test:regression` and `npm run test:matching` before presenting.
+
+
+## Rubric audit — 7 October 2026
+
+| Criterion | Demonstration | Boundary to explain |
+| --- | --- | --- |
+| AI portfolios | Open a creator’s portfolio → View Project for tools/models, workflow, human contribution, assets and inline video. | Sample artwork/video is illustrative; evidence references remain self-declared. |
+| Brief definition | Campaign editor and HECX brief assistant support requirements, content, style, format, aspect ratio and rights. AI proposals must be reviewed before saving. | Generation is not publication or a licensing decision. |
+| Discovery | Combine tools/content/format/platform filters, then try an unavailable tool and remove its filter. Server search includes published project evidence. | Sample profiles appear only on the first page; live profiles are paginated. |
+| UX | Compare 2–4 creators in the studio; inspect percentage factors and missing evidence. Check on a phone-size viewport. | A match percentage is evidence alignment, not a probability of success. |
+| Presentation | Follow the three-minute script above and export the decision brief. | State the production limits below rather than claiming independent verification. |
+
+Search filters now apply to sample and live results, active AI filters are removable, public filter choices remain available after narrowing results, and backend failures surface a retry action. Name relevance and published-project count are ordered before server pagination.
+
+Production email still needs a verified sending domain to reach arbitrary recipients. Delivery/revision coordination currently uses engagement conversations and campaign status; there is no escrow/payment system or independent tool/license certification.

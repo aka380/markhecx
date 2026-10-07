@@ -1,4 +1,4 @@
-import { searchCreators } from "../services/discovery";
+import { searchCreators, discoveryFacets } from "../services/discovery";
 import { Router } from "express";
 import { z } from "zod";
 import { authenticate, requireRole } from "../middleware/auth";
@@ -29,6 +29,9 @@ creatorRoutes.get("/creators/username/:username", async (req, res) => {
 });
 creatorRoutes.get("/creators/search", async (req, res) =>
   res.json(await searchCreators(req.query)),
+);
+creatorRoutes.get("/creators/facets", async (_req, res) =>
+  res.json(await discoveryFacets()),
 );
 creatorRoutes.get("/creators/:id", async (req, res) => {
   const doc = await creatorDocuments.findOne({

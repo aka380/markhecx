@@ -81,15 +81,24 @@ export function PublicProjectDialog({
             {project.media
               .filter((m) => m.type === "video")
               .map((m) => (
+                <figure key={m.id} style={{ margin: 0 }}>
+                  {/\.(mp4|webm|ogg)(?:[?#]|$)/i.test(m.url) && (
+                    <video controls playsInline preload="none"
+                      aria-label={m.alt || `${project.title} video`}
+                      src={m.url}
+                      style={{ width: "100%", maxHeight: "60vh", borderRadius: 12 }}
+                    />
+                  )}
+                  {m.alt && <figcaption className="small-note">{m.alt}</figcaption>}
                 <a
                   className="text-link"
-                  key={m.id}
                   href={m.url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   Watch project video
                 </a>
+                </figure>
               ))}
           </div>
         )}

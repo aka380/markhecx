@@ -53,10 +53,17 @@ export async function searchCreators(raw: unknown) {
       });
       continue;
     }
-    if (typeof v === "string" && v)
-      clauses.push({
-        [`${prefix}.${path}`]: { $regex: escape(v), $options: "i" },
-      });
+    if (typeof v === "string" && v) {
+      const pattern = { $regex: ["identity", "category"].includes(key) ? "^" + escape(v) + "$" : escape(v), $options: "i" };
+      const profileMatch = { [`${prefix}.${path}`]: pattern };
+      clauses.push(path.startsWith("creative.") ? {
+        $or: [profileMatch, {
+          "state.publication.projects": {
+            $elemMatch: { status: "Published", [path]: pattern },
+          },
+        }],
+      } : profileMatch);
+    }
   }
   for (const skill of q.skill
     ? Array.isArray(q.skill)
@@ -77,6 +84,7 @@ export async function searchCreators(raw: unknown) {
         "identity",
         "bio",
         "skills.name",
+        "skills.category",
         "tags",
         "creative.specialization",
         "creative.tools",
@@ -85,17 +93,18 @@ export async function searchCreators(raw: unknown) {
         "creative.platforms",
         "creative.formats",
       ]
-        .map((path) => ({
+        .map<Filter<CreatorDocument>>((path) => ({
           [`${prefix}.${path}`]: {
-            $regex: escape(term.replace(/^@/, "")),
+            $regex: path === "skills.category" && term.toLowerCase() === "programming" ? "^(Programming|Development)$" : escape(term.replace(/^@/, "")),
             $options: "i",
           },
         }))
         .concat(
-          ["title", "description", "techStack", "tags"].map((path) => ({
-            ["state.publication.projects." + path]: {
-              $regex: escape(term),
-              $options: "i",
+          ["title", "description", "techStack", "tags", "creative.tools", "creative.models", "creative.specialization", "creative.contentTypes", "creative.formats", "creative.platforms"].map((path) => ({
+            "state.publication.projects": {
+              $elemMatch: { status: "Published", [path]: {
+                $regex: escape(term), $options: "i",
+              } },
             },
           })),
         ),
@@ -120,16 +129,41 @@ export async function searchCreators(raw: unknown) {
   const filter = { $and: clauses };
   const [total, docs] = await Promise.all([
     creatorDocuments.countDocuments(filter),
-    creatorDocuments
-      .find(filter)
-      .sort(
-        q.sort === "Recently Joined" || q.view === "New Creators"
-          ? { createdAt: -1, _id: 1 }
-          : { "state.publication.profile.name": 1, _id: 1 },
-      )
-      .skip((q.page - 1) * q.limit)
-      .limit(q.limit)
-      .toArray(),
+    creatorDocuments.aggregate<CreatorDocument>([
+      { $match: filter },
+      { $addFields: {
+        __projectCount: { $size: { $filter: {
+          input: { $ifNull: ["$state.publication.projects", []] }, as: "project",
+          cond: { $eq: ["$$project.status", "Published"] },
+        } } },
+        __relevance: { $sum: q.q.split(/\s+/).filter(Boolean).map(term => {
+          const escaped = escape(term.replace(/^@/, ""));
+          const matches = (path: string, exact = false) => ({ $regexMatch: {
+            input: { $ifNull: ["$" + prefix + "." + path, ""] },
+            regex: exact ? "^" + escaped + "$" : escaped, options: "i",
+          } });
+          return { $add: [
+            { $cond: [{ $or: [matches("name", true), matches("username", true)] }, 10, 0] },
+            { $cond: [{ $anyElementTrue: { $map: {
+              input: { $ifNull: ["$" + prefix + ".skills", []] }, as: "skill",
+              in: { $regexMatch: { input: "$$skill.name", regex: "^" + escaped + "$", options: "i" } },
+            } } }, 5, 0] },
+            { $cond: [matches("identity"), 3, 0] },
+          ] };
+        }) },
+      } },
+      { $sort: q.sort === "Recently Joined" || q.view === "New Creators"
+        ? { createdAt: -1, _id: 1 }
+        : q.sort === "Most Projects"
+          ? { __projectCount: -1, "state.publication.profile.name": 1, _id: 1 }
+          : q.sort === "Most Relevant" || (!q.sort && q.q)
+            ? { __relevance: -1, "state.publication.profile.name": 1, _id: 1 }
+            : { "state.publication.profile.name": 1, _id: 1 },
+      },
+      { $skip: (q.page - 1) * q.limit },
+      { $limit: q.limit },
+      { $unset: ["__projectCount", "__relevance"] },
+    ]).toArray(),
   ]);
   return {
     creators: docs.map(publicCreator).filter(Boolean),
@@ -137,4 +171,15 @@ export async function searchCreators(raw: unknown) {
     page: q.page,
     pages: Math.ceil(total / q.limit),
   };
+}
+
+/** Facets are independent of the current query and contain only public profile metadata. */
+export async function discoveryFacets() {
+  const filter = { "state.publication.portfolio.visibility": "Public" };
+  const [category, identity, skills] = await Promise.all([
+    creatorDocuments.distinct("state.publication.profile.skills.category", filter),
+    creatorDocuments.distinct("state.publication.profile.identity", filter),
+    creatorDocuments.distinct("state.publication.profile.skills.name", filter),
+  ]);
+  return { category, identity, skills };
 }

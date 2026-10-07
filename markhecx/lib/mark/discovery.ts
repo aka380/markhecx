@@ -44,6 +44,11 @@ export interface CreatorFilters {
   experience: string;
   projects: string;
   portfolio: string;
+  tool?: string;
+  specialization?: string;
+  contentType?: string;
+  platform?: string;
+  format?: string;
 }
 export interface DiscoveryQuery extends CreatorFilters {
   q: string;
@@ -70,6 +75,11 @@ export const emptyFilters: CreatorFilters = {
   experience: "",
   projects: "",
   portfolio: "",
+  tool: "",
+  specialization: "",
+  contentType: "",
+  platform: "",
+  format: "",
 };
 export function hasPortfolio(c: Creator) {
   return c.publicPortfolio !== false;
@@ -99,6 +109,7 @@ export function discoveryCreators(publication: Publication | null): Creator[] {
       tags: p.tags,
       projects: projects.map((x) => ({
         name: x.title,
+        creative: x.creative,
         detail: [x.description, ...x.techStack, ...x.tags]
           .filter(Boolean)
           .join(" "),
@@ -114,8 +125,16 @@ export function discoveryCreators(publication: Publication | null): Creator[] {
 }
 export const searchDiscoveryCreators = searchCreatorPool;
 export function filterCreators(pool: Creator[], f: CreatorFilters) {
+  const contains = (values: string[] | undefined, query: string | undefined) =>
+    !query || (values || []).some(value => normalize(value).includes(normalize(query)));
+
   return pool.filter(
     (c) =>
+      contains([...(c.creative?.tools || []), ...c.projects.flatMap(p => p.creative?.tools || [])], f.tool) &&
+      contains([c.creative?.specialization || "", ...c.projects.map(p => p.creative?.specialization || "")], f.specialization) &&
+      contains(c.creative?.contentTypes, f.contentType) &&
+      contains(c.creative?.platforms, f.platform) &&
+      contains(c.creative?.formats, f.format) &&
       (!f.category ||
         creatorCategories(c).includes(canonicalCategory(f.category))) &&
       f.skills.every((s) =>
@@ -286,6 +305,11 @@ export function readDiscoveryQuery(
     experience: params.get("experience") || "",
     projects: params.get("projects") || "",
     portfolio: params.get("portfolio") || "",
+    tool: params.get("tool") || "",
+    specialization: params.get("specialization") || "",
+    contentType: params.get("contentType") || "",
+    platform: params.get("platform") || "",
+    format: params.get("format") || "",
   };
 }
 export function updateDiscoveryQuery(

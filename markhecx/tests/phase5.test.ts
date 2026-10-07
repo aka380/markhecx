@@ -1,3 +1,4 @@
+import { creativeSchema, mergeCreativeEvidence } from "../lib/mark/creative";
 import { extractBrief } from "../lib/mark/marketplace/brief-extractor";
 import { compareCreators } from "../lib/mark/marketplace/compare";
 import test from "node:test";
@@ -37,7 +38,6 @@ import {
 import { creators } from "../lib/mark/data";
 import { emptyState, migrateState } from "../lib/mark/store";
 import { blankProject } from "../lib/mark/models";
-import { creativeSchema } from "../lib/mark/creative";
 const brand: Actor = { signedIn: true, role: "Brand", id: "local-brand" },
   creator: Actor = { signedIn: true, role: "Creator", id: "local" },
   guest: Actor = { ...creator, signedIn: false },
@@ -690,4 +690,14 @@ test('local brief extraction leaves unspecified terms and rights empty', () => {
   assert.equal(draft.timeline, undefined);
   assert.deepEqual(draft.requirements, []);
   assert.equal(extractBrief('Tell a new story').format, '');
+});
+
+
+test("past-project rights never imply permission for a new campaign", () => {
+  const available = creativeSchema.parse({commercialUse:"Available", tools:["Runway"]});
+  const merged = mergeCreativeEvidence(undefined, [available])!;
+  assert.deepEqual(merged.tools, ["Runway"]);
+  assert.equal(merged.commercialUse, "Unspecified");
+  const restricted = creativeSchema.parse({commercialUse:"Restricted"});
+  assert.equal(mergeCreativeEvidence(restricted, [available])!.commercialUse, "Restricted");
 });

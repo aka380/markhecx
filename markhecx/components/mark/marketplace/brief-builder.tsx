@@ -3,7 +3,7 @@ import { useApp } from "../provider";
 import { extractBrief } from "@/lib/mark/marketplace/brief-extractor";
 import { useState } from "react";
 import { api } from "@/lib/mark/api/client";
-import type { BriefDraft } from "@/lib/mark/creative";
+import { briefDraftSchema, type BriefDraft } from "@/lib/mark/creative";
 import { Button, Textarea, Input, Choice, Badge } from "../ui";
 export function BriefBuilder({
   onAccept,
@@ -21,6 +21,7 @@ export function BriefBuilder({
       <label className="field">
         Describe your campaign
         <Textarea
+          disabled={busy}
           value={prompt}
           maxLength={2000}
           onChange={(e) => setPrompt(e.target.value)}
@@ -39,7 +40,7 @@ export function BriefBuilder({
               method: "POST",
               body: { prompt },
             });
-            setDraft(r.draft);
+            setDraft(briefDraftSchema.parse(r.draft));
           } catch (e) {
             setError((e as Error).message);
           } finally {
@@ -68,11 +69,11 @@ export function BriefBuilder({
             ] as const
           ).map((key) => (
             <label className="field" key={key}>
-              {key}
+              {{ title: "Campaign title", objective: "Objective", timeline: "Timeline", contentType: "Content type", style: "Creative style", platform: "Platform", format: "Format", aspectRatio: "Aspect ratio" }[key]}
               <Input
                 value={draft[key] || ""}
                 maxLength={
-                  key === "style" ? 500 : key === "aspectRatio" ? 50 : 100
+                  ["style", "timeline"].includes(key) ? 500 : key === "aspectRatio" ? 50 : ["title", "objective", "contentType"].includes(key) ? 200 : 100
                 }
                 onChange={(e) => setDraft({ ...draft, [key]: e.target.value })}
               />
@@ -96,7 +97,7 @@ export function BriefBuilder({
               onChange={(e) =>
                 setDraft({
                   ...draft,
-                  deliverables: e.target.value.split("\n").slice(0, 20),
+                  deliverables: e.target.value.split("\n"),
                 })
               }
             />
@@ -108,7 +109,7 @@ export function BriefBuilder({
               onChange={(e) =>
                 setDraft({
                   ...draft,
-                  requirements: e.target.value.split("\n").slice(0, 20),
+                  requirements: e.target.value.split("\n"),
                 })
               }
             />
@@ -117,7 +118,17 @@ export function BriefBuilder({
             type="button"
             className="btn-primary"
             onClick={() => {
-              onAccept(draft);
+              const result = briefDraftSchema.safeParse({
+                ...draft,
+                deliverables: draft.deliverables?.map(value => value.trim()).filter(Boolean),
+                requirements: draft.requirements.map(value => value.trim()).filter(Boolean),
+              });
+              if (!result.success) {
+                setError(result.error.issues.map(issue => `${issue.path.join(" ")}: ${issue.message}`).join(". "));
+                return;
+              }
+              onAccept(result.data);
+              setError("");
               setDraft(null);
             }}
           >

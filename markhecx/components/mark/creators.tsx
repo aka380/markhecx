@@ -42,7 +42,8 @@ const EMPTY_SEARCH_PARAMS = new URLSearchParams();
 export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
   const params = useSearchParams() ?? EMPTY_SEARCH_PARAMS,
     router = useRouter();
-  const { state, ready } = useApp();
+  const { state, ready, localMode } = useApp();
+  const facets = useAPIResource<{ category: string[]; identity: string[]; skills: string[] }>(localMode ? null : "/creators/facets");
   const discovery = useDiscoveryResource(
     savedRoute || params.get("view") === "Saved"
       ? undefined
@@ -126,6 +127,11 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
       "experience",
       "projects",
       "portfolio",
+      "tool",
+      "specialization",
+      "contentType",
+      "platform",
+      "format",
     ].flatMap((key) =>
       query[key as keyof typeof query]
         ? [{ key, value: String(query[key as keyof typeof query]) }]
@@ -134,7 +140,7 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
     ...query.skills.map((value) => ({ key: "skill", value })),
   ];
   const filterControls = (
-    <DiscoveryFilters pool={pool} filters={query} onChange={navigate} />
+    <DiscoveryFilters pool={[...creators.filter(c => c.source === "sample"), ...pool]} facets={facets.data} filters={query} onChange={navigate} />
   );
   const extraCategories = [...new Set(pool.flatMap(creatorCategories))].filter(
     (c) => !discoveryCategories.includes(c),
@@ -288,7 +294,7 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
               className="btn-primary"
               onClick={() => setFiltersOpen(false)}
             >
-              Show {outcome.results.length} creators
+              Show {outcome.results.length} {outcome.results.length === 1 ? "creator" : "creators"}
             </Button>
             <Button variant="ghost" onClick={clearFilters}>
               Reset filters
@@ -368,7 +374,7 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
             <span>
               {" "}
               Page {discovery.data.page} of {discovery.data.pages} ·{" "}
-              {discovery.data.total} creators{" "}
+              {discovery.data.total} matching profiles (samples on page 1){" "}
             </span>
             <Button
               disabled={(discovery.data.page || 1) >= discovery.data.pages}
@@ -401,7 +407,8 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
           <div className="results-heading" role="status" aria-live="polite">
             <span>
               {outcome.results.length}{" "}
-              {outcome.results.length === 1 ? "creator" : "creators"} found
+              {outcome.results.length === 1 ? "creator" : "creators"}{" "}
+              {(discovery.data?.pages || 0) > 1 ? "on this page" : "found"}
               {query.q ? ` for “${query.q}”` : ""}
             </span>
             <span>

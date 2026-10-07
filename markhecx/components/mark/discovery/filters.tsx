@@ -1,13 +1,15 @@
 "use client";
 import { Creator } from "@/lib/mark/data";
-import { CreatorFilters, creatorCategories } from "@/lib/mark/discovery";
+import { CreatorFilters, creatorCategories, canonicalCategory } from "@/lib/mark/discovery";
 import { Choice } from "../ui";
 export function DiscoveryFilters({
   pool,
+  facets,
   filters,
   onChange,
 }: {
   pool: Creator[];
+  facets?: { category: string[]; identity: string[]; skills: string[] };
   filters: CreatorFilters;
   onChange: (patch: Record<string, string | string[]>) => void;
 }) {
@@ -16,12 +18,12 @@ export function DiscoveryFilters({
     {
       key: "category",
       label: "Category",
-      values: unique(pool.flatMap(creatorCategories)),
+      values: unique([...pool.flatMap(creatorCategories), ...(facets?.category || []).map(canonicalCategory)]),
     },
     {
       key: "identity",
       label: "Creator identity",
-      values: unique(pool.map((c) => c.identity)),
+      values: unique([...pool.map((c) => c.identity), ...(facets?.identity || [])]),
     },
     {
       key: "availability",
@@ -76,7 +78,7 @@ export function DiscoveryFilters({
           Skills <span className="small-note">Match all selected</span>
         </legend>
         <div>
-          {unique(pool.flatMap((c) => c.skills)).map((skill) => (
+          {unique([...pool.flatMap((c) => c.skills), ...(facets?.skills || []), ...filters.skills]).map((skill) => (
             <label key={skill}>
               <input
                 type="checkbox"

@@ -1,6 +1,6 @@
 "use client";
 import { useApp } from "../provider";
-import { discoveryCreators } from "@/lib/mark/discovery";
+import { discoveryCreators, readDiscoveryQuery, runDiscovery } from "@/lib/mark/discovery";
 import { useMemo } from "react";
 import { creators as builtInCreators, type Creator } from "@/lib/mark/data";
 import { useAPIResource } from "../api-resource";
@@ -18,21 +18,29 @@ export function useDiscoveryResource(query?: string) {
       return { creators, total: creators.length, page: 1, pages: 1 };
     }
     const samples = builtInCreators.filter((creator) => creator.source === "sample");
-    if (!resource.data)
-      return resource.error
-        ? { creators: samples, total: samples.length, page: 1, pages: 1 }
-        : resource.data;
+    if (!resource.data) return undefined;
+    const params = new URLSearchParams(query);
+    if (!params.has("view")) params.set("view", "All Creators");
+    const sampleResults = query === undefined ? samples : runDiscovery(
+      samples, readDiscoveryQuery(params, state.signedIn), state.signedIn,
+      state.accountType === "Brand" ? state.brandSaved : state.saved,
+      state.signedIn ? { profile: state.profile, projects: state.projects } : null,
+    ).results;
     const ids = new Set(resource.data.creators.map((creator) => creator.id));
+    // Sample records appear once, on page one, and obey the same filters.
     const creators = [
       ...resource.data.creators,
-      ...samples.filter((creator) => !ids.has(creator.id)),
+      ...((resource.data.page || 1) === 1 ? sampleResults.filter((creator) => !ids.has(creator.id)) : []),
     ];
-    return { ...resource.data, creators, total: creators.length };
-  }, [resource.data, resource.error, localMode, state.publication]);
+    return {
+      ...resource.data, creators,
+      total: (resource.data.total ?? resource.data.creators.length) + sampleResults.length,
+    };
+  }, [resource.data, localMode, query, state.publication, state.signedIn, state.accountType, state.brandSaved, state.saved, state.profile, state.projects]);
   return {
     ...resource,
     data,
-    error: data && resource.error ? undefined : resource.error,
+    error: resource.error,
     loading: data ? false : resource.loading,
   };
 }

@@ -76,6 +76,12 @@ export function CreatorCard({
             <Badge key={s}>{s}</Badge>
           ))}
         </div>
+        {!!c.creative?.tools.length && (
+          <p className="small-note">Tools: {c.creative.tools.slice(0, 4).join(" · ")}</p>
+        )}
+        {!!c.creative?.contentTypes.length && (
+          <p className="small-note">Creates: {c.creative.contentTypes.join(" · ")}</p>
+        )}
         {!!c.tags.length && (
           <div className="creator-tags">
             {c.tags.slice(0, 2).map((t) => (
@@ -85,7 +91,7 @@ export function CreatorCard({
         )}
         {c.availability && <span className="small-note">{c.availability}</span>}
         {c.joinedAt && (
-          <span className="small-note">Joined {c.joinedAt} · sample date</span>
+          <span className="small-note">Joined {c.joinedAt.slice(0, 10)}{c.source === "sample" ? " · sample date" : ""}</span>
         )}
         <div className="creator-meta">
           <span>
