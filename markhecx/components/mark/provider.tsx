@@ -336,10 +336,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               ? "The hosted demo stores changes safely in this browser."
               : "Sign in to access your saved workspace across devices."}
           </DialogDescription>
-          {!localMode && auth && auth !== "Reset" && (
+          {auth && auth !== "Reset" && (
             <GoogleSignIn
               role={role}
+              localMode={localMode}
               onSession={async (session) => {
+                if (localMode) {
+                  const next = {
+                    ...live.current,
+                    signedIn: true,
+                    accountType: session.user.role,
+                    profile:
+                      session.user.role === "Creator"
+                        ? { ...live.current.profile, name: session.user.name }
+                        : live.current.profile,
+                  };
+                  assign(next);
+                  setUser(session.user);
+                  setAuth("");
+                  router.push(
+                    session.user.role === "Brand" ? "/brand" : "/profile",
+                  );
+                  toast.success(`Signed in with Google as ${session.user.name}.`);
+                  return;
+                }
                 await load(session);
                 setAuth("");
                 router.push(

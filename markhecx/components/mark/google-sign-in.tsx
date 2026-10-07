@@ -38,6 +38,7 @@ export function GoogleSignIn({
   role,
   onSession,
   link = false,
+  localMode = false,
 }: {
   role: "Creator" | "Brand";
   onSession: (session: {
@@ -45,6 +46,7 @@ export function GoogleSignIn({
     csrfToken: string;
   }) => Promise<void>;
   link?: boolean;
+  localMode?: boolean;
 }) {
   const element = useRef<HTMLDivElement>(null),
     callback = useRef(onSession);
@@ -61,10 +63,12 @@ export function GoogleSignIn({
     async function setup() {
       try {
         await loadGoogle();
-        const challenge = await api<{ nonce: string; clientId: string }>(
-          "/auth/google/challenge",
-          { method: "POST", quiet: true },
-        );
+        const challenge = localMode
+          ? { nonce: "", clientId }
+          : await api<{ nonce: string; clientId: string }>(
+              "/auth/google/challenge",
+              { method: "POST", quiet: true },
+            );
         if (!active || !element.current) return;
         if (challenge.clientId !== clientId)
           throw Error(
@@ -79,6 +83,34 @@ export function GoogleSignIn({
             setBusy(true);
             setError("");
             try {
+              if (localMode) {
+                const payload = JSON.parse(
+                  decodeURIComponent(
+                    atob(response.credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
+                      .split("")
+                      .map((character) =>
+                        "%" + character.charCodeAt(0).toString(16).padStart(2, "0"),
+                      )
+                      .join(""),
+                  ),
+                ) as { sub?: string; name?: string; email?: string; iss?: string };
+                if (
+                  !payload.sub ||
+                  !payload.email ||
+                  !["accounts.google.com", "https://accounts.google.com"].includes(payload.iss || "")
+                )
+                  throw Error("Google did not return a valid identity.");
+                await callback.current({
+                  user: {
+                    id: `google-${payload.sub}`,
+                    name: payload.name || payload.email.split("@")[0],
+                    email: payload.email,
+                    role,
+                  },
+                  csrfToken: "local-demo",
+                });
+                return;
+              }
               const session = await api<{
                 user: SessionUser;
                 csrfToken: string;
@@ -114,7 +146,7 @@ export function GoogleSignIn({
       active = false;
       window.google?.accounts.id.cancel();
     };
-  }, [clientId, role, link, attempt]);
+  }, [clientId, role, link, localMode, attempt]);
   if (!clientId)
     return (
       <p className="small-note">Google Sign-In is currently unavailable.</p>
