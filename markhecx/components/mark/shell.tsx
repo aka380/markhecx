@@ -64,6 +64,7 @@ export function menuHref(group: string, item: string) {
     "Saved Campaigns": "/campaigns/saved",
     Applications: "/applications",
     Invitations: "/invitations",
+    Engagements: "/engagements",
     "Brand Dashboard": "/brand",
     Analytics: "/brand/analytics",
     "Brand Page": "/brand/profile",
@@ -108,10 +109,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
             "Brand Saved Creators",
             "Applications",
             "Invitations",
+            "Engagements",
             "Analytics",
             "Brand Page",
           ]
-        : ["Campaigns", "Saved Campaigns", "Applications", "Invitations"]),
+        : ["Campaigns", "Saved Campaigns", "Applications", "Invitations", "Engagements"]),
       ...menus.More,
     ],
   };
