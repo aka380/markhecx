@@ -1,0 +1,41 @@
+.studio { display: grid; gap: 24px; min-width: 0; }
+.steps { display:flex; gap:16px; align-items:center; flex-wrap:wrap; color:#c4b5fd; font-size:13px; letter-spacing:.04em; }
+.layout { display:grid; grid-template-columns:minmax(260px,340px) minmax(0,1fr); gap:28px; align-items:start; }
+.brief { display:grid; gap:18px; border-top:2px solid #ec2485; }
+.brief h2,.results h2 { font-size:24px; letter-spacing:-.03em; }
+.brief p { color:#b0acb8; font-size:14px; line-height:1.65; }
+.presets { display:flex; flex-wrap:wrap; gap:8px; }
+.presets button { white-space:normal; text-align:left; font-size:12px; }
+.fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.select { background:#101014; color:#f5f3ff; border:1px solid #38343e; padding:12px; border-radius:12px; width:100%; }
+.results { min-width:0; }
+.toolbar { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+.toolbar>div { flex:1 1 260px; }
+.cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin-top:16px; }
+.creator { display:flex; flex-direction:column; gap:14px; min-width:0; }
+.cardHead { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.cardHead>div { flex:1; min-width:100px; }
+.cardHead h3 { font-size:18px; margin:0; }
+.cardHead p { color:#aaa5b5; font-size:13px; }
+.shortlist { display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer; min-height:44px; }
+.shortlist input { accent-color:#ec2485; width:18px; height:18px; }
+.cover { aspect-ratio:16/9; background-size:cover; background-position:center; border-radius:12px; background-color:#242029; }
+.score { display:flex; align-items:center; gap:12px; }
+.score strong { color:#c4b5fd; font-size:42px; line-height:1.1; letter-spacing:-.05em; }
+.score span { color:#aaa5b5; font-size:12px; line-height:1.7; }
+.studio details { border-top:1px solid #35313d; padding-top:12px; }
+.studio summary { cursor:pointer; padding:8px 0; font-size:14px; font-weight:600; }
+.studio details p,.factor { font-size:13px; line-height:1.6; color:#b7b1c4; overflow-wrap:anywhere; }
+.factor { margin-top:12px; }
+.factor strong { color:#e3d9f7; }
+.comparison { border-top:2px solid #a78bfa; margin:24px 0; }
+.tableWrap { overflow:auto; margin:18px 0; }
+.tableWrap table { width:100%; min-width:560px; border-collapse:collapse; text-align:left; font-size:13px; }
+.tableWrap caption { text-align:left; padding:10px 0; color:#c4b5fd; }
+.tableWrap td,.tableWrap th { padding:14px; border-bottom:1px solid #38343e; min-width:160px; vertical-align:top; }
+.tableWrap td p { margin-top:8px; line-height:1.6; color:#b7b1c4; }
+.studio ul { padding-left:20px; list-style:disc; font-size:14px; line-height:1.8; }
+.next { display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+@media(max-width:1100px){.cards{grid-template-columns:1fr;}.layout{gap:18px;}}
+@media(max-width:760px){.layout{grid-template-columns:1fr;}.steps{gap:8px; font-size:11px;}.cards{grid-template-columns:1fr;}.brief{padding:20px;}}
+@media(prefers-reduced-motion:reduce){.studio *{scroll-behavior:auto;transition:none!important;}}

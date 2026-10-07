@@ -1,4 +1,5 @@
 "use client";
+import { compareCreators } from "@/lib/mark/marketplace/compare";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useApp } from "../provider";
@@ -1124,6 +1125,7 @@ export function CampaignMatches({ id }: { id: string }) {
   );
 }
 function Matches({ id }: { id: string }) {
+  const { localMode } = useApp();
   const { data, actor } = useMarketplace();
   const pool = useDiscoveryCreators();
   const c = data.campaigns.find((c) => c.id === id && owns(actor, c));
@@ -1280,10 +1282,10 @@ function Matches({ id }: { id: string }) {
       </div>
       <Card className="panel hecx-compare-bar">
         <div>
-          <Badge tone="purple">HECX · Gemini comparison</Badge>
+          <Badge tone="purple">HECX · Creator comparison</Badge>
           <h3>Compare shortlisted creators</h3>
           <p className="small-note">
-            Select 2–4 people. HECX uses their verified profiles and the campaign’s calculated requirement factors to recommend the strongest fit.
+            Select 2–4 people. HECX uses their supplied profiles and the campaign’s calculated requirement factors to recommend the strongest fit.
           </p>
         </div>
         <Button
@@ -1294,7 +1296,7 @@ function Matches({ id }: { id: string }) {
             setComparison(null);
             try {
               setComparison(
-                await api<CreatorComparison>("/hecx/compare-creators", {
+                localMode ? compareCreators(c, pool.filter(creator => selectedCreators.includes(creator.id))) : await api<CreatorComparison>("/hecx/compare-creators", {
                   method: "POST",
                   body: { campaignId: id, creatorIds: selectedCreators },
                 }),

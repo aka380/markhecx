@@ -48,6 +48,7 @@ const menus = {
     "Upgrade",
   ],
   More: [
+    "Match Studio",
     "About",
     "Samples",
     "Guidelines",
@@ -59,6 +60,7 @@ const menus = {
 };
 export function menuHref(group: string, item: string) {
   const special: Record<string, string> = {
+    "Match Studio": "/studio",
     "Create Campaign": "/campaigns/new",
     Campaigns: "/campaigns",
     "Saved Campaigns": "/campaigns/saved",

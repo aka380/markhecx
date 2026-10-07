@@ -1,4 +1,5 @@
 "use client";
+import { useApp } from "../provider";
 import { BriefBuilder } from "./brief-builder";
 import { api } from "@/lib/mark/api/client";
 import { useState } from "react";
@@ -61,6 +62,7 @@ export function CampaignEditor({ id }: { id?: string }) {
   );
 }
 function Editor({ id }: { id?: string }) {
+  const { localMode } = useApp();
   const { data, actor, change } = useMarketplace();
   const router = useRouter();
   const existing = data.campaigns.find(
@@ -162,7 +164,7 @@ function Editor({ id }: { id?: string }) {
       try {
         setSuggestion({
           action,
-          result: await api<ReturnType<typeof suggestCampaign>>(
+          result: localMode ? suggestCampaign(action, draft) : await api<ReturnType<typeof suggestCampaign>>(
             "/hecx/campaign",
             { method: "POST", body: { action, campaign: draft } },
           ),

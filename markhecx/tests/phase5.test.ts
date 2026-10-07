@@ -1,3 +1,5 @@
+import { extractBrief } from "../lib/mark/marketplace/brief-extractor";
+import { compareCreators } from "../lib/mark/marketplace/compare";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -655,4 +657,37 @@ test("project evidence matches complete skill terms rather than accidental subst
     scoreCreator(c, person).factors.find((f) => f.key === "projects")?.value,
     1,
   );
+});
+
+test('aspect ratio mismatch and missing evidence are distinguished', () => {
+  const campaign = { ...blankCampaign(), aspectRatio: '9:16' };
+  const creator = { ...creators[0], creative: undefined };
+  const unknown = matchingService.matchCreatorsToCampaign(campaign, [creator])[0];
+  assert.equal(unknown.score, null);
+  assert.equal(unknown.coverage, 0);
+  const mismatch = matchingService.matchCreatorsToCampaign(campaign, [{ ...creator, creative: { ...creativeSchema.parse({}), aspectRatio: '16:9' } }])[0];
+  assert.equal(mismatch.score, 0);
+  assert.equal(mismatch.coverage, 100);
+});
+
+test('comparison refuses weak evidence, ties, and blocked requirements', () => {
+  const campaign = { ...blankCampaign(), requirements: {...blankCampaign().requirements, requiredSkills: ['Impossible skill']} };
+  const candidates = creators.slice(0,2);
+  assert.equal(compareCreators(campaign, candidates).recommendedCreatorId, null);
+  assert.equal(compareCreators(blankCampaign(), candidates).recommendedCreatorId, null);
+  assert.throws(() => compareCreators(campaign, [candidates[0], candidates[0]]), /2–4/);
+  const tied = candidates.map(c => ({...c, skills:['Design'], projects:[]}));
+  const tieBrief = {...blankCampaign(),requirements:{...blankCampaign().requirements, requiredSkills:['Design']}};
+  assert.equal(compareCreators(tieBrief,tied).recommendedCreatorId,null);
+});
+
+
+test('local brief extraction leaves unspecified terms and rights empty', () => {
+  const draft = extractBrief('Cinematic video for Instagram in 9:16');
+  assert.equal(draft.aspectRatio, '9:16');
+  assert.equal(draft.platform, 'Instagram');
+  assert.equal(draft.commercialUse, 'Unspecified');
+  assert.equal(draft.timeline, undefined);
+  assert.deepEqual(draft.requirements, []);
+  assert.equal(extractBrief('Tell a new story').format, '');
 });

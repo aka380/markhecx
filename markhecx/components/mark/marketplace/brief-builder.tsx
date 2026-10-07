@@ -1,4 +1,6 @@
 "use client";
+import { useApp } from "../provider";
+import { extractBrief } from "@/lib/mark/marketplace/brief-extractor";
 import { useState } from "react";
 import { api } from "@/lib/mark/api/client";
 import type { BriefDraft } from "@/lib/mark/creative";
@@ -8,13 +10,14 @@ export function BriefBuilder({
 }: {
   onAccept: (draft: BriefDraft) => void;
 }) {
+  const { localMode } = useApp();
   const [prompt, setPrompt] = useState(""),
     [draft, setDraft] = useState<BriefDraft | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   return (
     <section className="form-grid">
-      <Badge tone="purple">HECX brief assistant</Badge>
+      <Badge tone="purple">{localMode ? "HECX · Local brief extraction" : "HECX brief assistant"}</Badge>
       <label className="field">
         Describe your campaign
         <Textarea
@@ -31,6 +34,7 @@ export function BriefBuilder({
           setBusy(true);
           setError("");
           try {
+            if (localMode) { setDraft(extractBrief(prompt)); return; }
             const r = await api<{ draft: BriefDraft }>("/hecx/brief", {
               method: "POST",
               body: { prompt },
@@ -49,8 +53,7 @@ export function BriefBuilder({
       {draft && (
         <>
           <p>
-            Review and edit this AI proposal. Accepting updates this draft only;
-            save or publish separately.
+            {localMode ? "Local extraction uses only terms present in your idea. Complete the blanks and confirm rights, dates and deliverables." : "Review and edit this AI proposal."} Accepting updates this draft only; save or publish separately.
           </p>
           {(
             [

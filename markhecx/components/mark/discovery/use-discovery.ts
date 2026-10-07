@@ -1,15 +1,22 @@
 "use client";
+import { useApp } from "../provider";
+import { discoveryCreators } from "@/lib/mark/discovery";
 import { useMemo } from "react";
 import { creators as builtInCreators, type Creator } from "@/lib/mark/data";
 import { useAPIResource } from "../api-resource";
 export function useDiscoveryResource(query?: string) {
+  const { state, localMode } = useApp();
   const resource = useAPIResource<{
     creators: Creator[];
     total?: number;
     page?: number;
     pages?: number;
-  }>(query === undefined ? "/creators" : "/creators/search?" + query);
+  }>(localMode ? null : query === undefined ? "/creators" : "/creators/search?" + query);
   const data = useMemo(() => {
+    if (localMode) {
+      const creators = discoveryCreators(state.publication).filter(c => c.source === "sample" || c.source === "local");
+      return { creators, total: creators.length, page: 1, pages: 1 };
+    }
     const samples = builtInCreators.filter((creator) => creator.source === "sample");
     if (!resource.data)
       return resource.error
@@ -21,7 +28,7 @@ export function useDiscoveryResource(query?: string) {
       ...samples.filter((creator) => !ids.has(creator.id)),
     ];
     return { ...resource.data, creators, total: creators.length };
-  }, [resource.data, resource.error]);
+  }, [resource.data, resource.error, localMode, state.publication]);
   return {
     ...resource,
     data,

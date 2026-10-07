@@ -89,6 +89,7 @@ export function CampaignCard({
   );
 }
 export function MatchAnalysis({ match: m }: { match: CreatorMatch }) {
+  const { localMode } = useApp();
   const [analysis, setAnalysis] = useState<{
       key: string;
       result: HecxResult;
@@ -113,7 +114,7 @@ export function MatchAnalysis({ match: m }: { match: CreatorMatch }) {
         </p>
       )}
       <p>{m.explanation}</p>
-      <Button
+      {!localMode && <Button
         disabled={busy}
         onClick={async () => {
           setBusy(true);
@@ -135,7 +136,7 @@ export function MatchAnalysis({ match: m }: { match: CreatorMatch }) {
         }}
       >
         {busy ? "HECX is analyzing…" : "Explain with HECX"}
-      </Button>
+      </Button>}
       {error && <p role="alert">{error}</p>}
       {analysis?.key === key && <HecxInsights result={analysis.result} />}
 

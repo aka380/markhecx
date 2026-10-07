@@ -223,6 +223,16 @@ export function scoreCreator(
       `Requested: ${campaign.commercialUse}. Self-declared: ${c.creative?.commercialUse || "Evidence unavailable"}; confirm licensing directly.`,
       true,
     );
+  if (campaign.aspectRatio)
+    add(
+      "aspectRatio",
+      "Aspect ratio fit",
+      10,
+      c.creative?.aspectRatio
+        ? Number(normalize(c.creative.aspectRatio) === normalize(campaign.aspectRatio))
+        : null,
+      `Requested: ${campaign.aspectRatio}. Self-declared: ${c.creative?.aspectRatio || "not provided"}; confirm alternate exports directly.`,
+    );
   if (campaign.budget !== null)
     add(
       "budget",

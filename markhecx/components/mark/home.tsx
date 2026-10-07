@@ -31,13 +31,12 @@ export function HomePage() {
             <span>Your next chapter.</span>
           </h1>
           <p>
-            A home for the things you create and the person you’re becoming.
-            Discover your people. Build your portfolio. Grow with HECX.
+            Discover AI filmmakers, animators and generative artists. Define a creative brief, inspect the workflow, and find the right collaborator with HECX.
           </p>
           <div className="hero-actions">
-            <Action href="/creators">
+            <Action href="/studio">
               <Compass size={17} />
-              Explore creators
+              Find my AI creator
             </Action>
             <Action href="/portfolio" secondary>
               <Plus size={17} />
@@ -45,8 +44,8 @@ export function HomePage() {
             </Action>
           </div>
           <div className="row section-copy">
-            <Action href="/campaigns" secondary>
-              Discover campaigns
+            <Action href="/creators" secondary>
+              Explore creator portfolios
             </Action>
           </div>
           <div className="hero-note">
