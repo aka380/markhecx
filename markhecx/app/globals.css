@@ -2554,3 +2554,251 @@ p {
     display: flex;
   }
 }
+
+/* Shared responsive safety layer for phones, tablets, desktops and touch UI. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+img,
+video,
+iframe,
+canvas {
+  max-width: 100%;
+}
+img,
+video {
+  height: auto;
+}
+.page-enter,
+.page-title > div,
+.panel,
+.form-grid,
+.field,
+.stack,
+.campaign-grid > *,
+.creator-grid > *,
+.project-grid > * {
+  min-width: 0;
+}
+.field input,
+.field textarea,
+.choice,
+[role="combobox"] {
+  width: 100%;
+  max-width: 100%;
+}
+.mark-dialog {
+  width: min(94vw, 620px);
+  max-height: min(88dvh, 900px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.campaign-dialog {
+  width: min(94vw, 760px);
+}
+.hecx-comparison-dialog {
+  width: min(94vw, 860px);
+}
+.deliverable,
+.profile-bio,
+.section-copy,
+.message,
+.match-analysis,
+.comparison-list p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 960px) {
+  .home-hero {
+    grid-template-columns: 1fr;
+    max-width: 720px;
+    margin-inline: auto;
+  }
+  .hero-workspace {
+    transform: none;
+  }
+  .campaign-editor-grid,
+  .profile-editor-layout,
+  .messages-layout {
+    grid-template-columns: 1fr;
+  }
+  .campaign-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .campaign-steps {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    padding-bottom: 6px;
+  }
+  .campaign-steps > * {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 720px) {
+  body {
+    font-size: 15px;
+  }
+  h1 {
+    font-size: clamp(30px, 9vw, 40px);
+  }
+  h2 {
+    font-size: clamp(23px, 7vw, 28px);
+  }
+  .topbar {
+    align-items: center;
+    padding: 14px 16px;
+  }
+  .global-search {
+    padding-block: 11px;
+  }
+  .main-container {
+    padding: 22px 16px calc(118px + env(safe-area-inset-bottom));
+  }
+  .page-title {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+  .title-actions,
+  .hero-actions,
+  .published-toolbar,
+  .builder-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .title-actions > *,
+  .hero-actions > *,
+  .published-toolbar > *,
+  .builder-toolbar > * {
+    width: 100%;
+  }
+  .panel,
+  .plan {
+    padding: 20px;
+  }
+  .creator-grid,
+  .project-grid,
+  .campaign-grid,
+  .campaign-stats,
+  .profile-data-grid,
+  .record-grid,
+  .media-edit-grid,
+  .template-grid,
+  .insight-grid {
+    grid-template-columns: 1fr;
+  }
+  .campaign-filters {
+    grid-template-columns: 1fr;
+  }
+  .desktop-campaign-filters,
+  .desktop-discovery-filters {
+    display: none;
+  }
+  .mobile-campaign-filters,
+  .mobile-discovery-filters {
+    display: block;
+  }
+  .bottom-nav {
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: calc(100% - 16px);
+    justify-content: space-around;
+    gap: 2px;
+    padding: 6px;
+    border-radius: 15px;
+  }
+  .nav-item {
+    min-width: 0;
+    flex: 1 1 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    min-height: 54px;
+    padding: 7px 4px;
+    font-size: 10px;
+  }
+  .nav-item .nav-chevron {
+    display: none;
+  }
+  .site-footer {
+    display: none;
+  }
+  .hecx-workspace {
+    height: min(780px, calc(100dvh - 190px));
+    min-height: 560px;
+  }
+  .hecx-toolbar,
+  .composer-actions,
+  .discovery-controls {
+    flex-wrap: wrap;
+  }
+  .hecx-toolbar > *,
+  .discovery-controls > * {
+    min-width: 0;
+  }
+  .public-project-dialog,
+  .mark-dialog {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .main-container {
+    padding-inline: 12px;
+  }
+  .topbar {
+    padding-inline: 12px;
+  }
+  .topbar .brand {
+    font-size: 17px;
+  }
+  .account-actions button {
+    min-width: 42px;
+    min-height: 42px;
+  }
+  .account-actions button:not([aria-label]) {
+    padding-inline: 8px;
+  }
+  .panel,
+  .plan,
+  .identity-preview {
+    padding: 16px;
+  }
+  .premium-intro h1 {
+    font-size: 36px;
+  }
+  .profile-heading {
+    margin-inline: 12px;
+  }
+  .profile-heading .title-actions,
+  .profile-heading .title-actions > * {
+    width: 100%;
+  }
+  .row > button,
+  .row > a {
+    max-width: 100%;
+  }
+  .mark-menu {
+    max-width: calc(100vw - 20px);
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  [role="button"],
+  [role="menuitem"] {
+    min-height: 44px;
+  }
+  .mark-card.interactive:hover,
+  .btn-primary:hover {
+    transform: none;
+  }
+}
