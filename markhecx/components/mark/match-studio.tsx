@@ -12,7 +12,7 @@ import styles from './match-studio.module.css';
 const samples = creators.filter(c => c.source === 'sample');
 const presets = [
   { name: 'Cinematic product launch', skill: 'AI filmmaking, Video editing', content: 'Product film', tool: 'Runway', format: 'Video', ratio: '16:9', platform: 'YouTube', brief: 'Create a cinematic electric-mobility product film for a fictional launch. Deliver one 30-second video with a storyboard and source-asset handover.' },
-  { name: 'Beauty campaign visuals', skill: 'Generative art, Art direction', content: 'Product imagery', tool: 'Midjourney', format: 'Image', ratio: '4:5', platform: 'Instagram', brief: 'Create a fictional skincare launch campaign. Deliver three product visuals with a consistent visual direction and a workflow breakdown.' },
+  { name: 'Beauty campaign visuals', skill: 'Generative art, Art direction', content: 'Product image', tool: 'Midjourney', format: 'Image', ratio: '4:5', platform: 'Instagram', brief: 'Create a fictional skincare launch campaign. Deliver three product visuals with a consistent visual direction and a workflow breakdown.' },
   { name: 'Character-led explainer', skill: 'AI animation, Storyboarding', content: 'Animation', tool: 'Blender', format: 'Video', ratio: '16:9', platform: 'YouTube', brief: 'Produce a fictional 30-second character animation about rooftop gardens. Deliver a storyboard, final video, and a human-contribution breakdown.' },
 ];
 const split = (text: string) => [...new Set(text.split(',').map(s => s.trim()).filter(Boolean))];
@@ -26,6 +26,8 @@ export function MatchStudio() {
   const patch = (key: keyof typeof initial, value: string) => {
     setForm(f => ({ ...f, [key]: value })); setCompared(false); setNotice('');
   };
+  const budgetError = form.budget.trim() && (!Number.isFinite(Number(form.budget)) || Number(form.budget) < 0)
+    ? 'Enter a budget of zero or more, or leave it blank.' : '';
   const campaign = useMemo<Campaign>(() => ({
     ...blankCampaign('studio'), id: 'studio-brief', title: form.title,
     brief: form.brief, description: form.brief, creativeDirection: form.style,
@@ -39,7 +41,7 @@ export function MatchStudio() {
   const matches = useMemo(() => matchingService.matchCreatorsToCampaign(campaign, samples), [campaign]);
   const hasRequirements = matches.some(m => m.factors.length > 0);
   const readiness = briefReadiness(campaign);
-  const comparison = compared && selected.length >= 2
+  const comparison = !budgetError && compared && selected.length >= 2
     ? compareCreators(campaign, samples.filter(c => selected.includes(c.id))) : null;
   const toggle = (id: string) => {
     if (!selected.includes(id) && selected.length >= 4) { setNotice('Compare up to four creators at a time.'); return; }
@@ -47,6 +49,7 @@ export function MatchStudio() {
     setCompared(false); setNotice('');
   };
   function download() {
+    if (budgetError) { setNotice(budgetError); return; }
     const payload = { title: 'MarkHECX creator decision brief', generatedAt: new Date().toISOString(),
       disclosure: 'Fictional sample creators. Deterministic matching; not hiring outcomes, verified credentials, or live Gemini research.',
       brief: form, methodology: 'Match = sum(weight × known factor value) / sum(known weights). Coverage = known weights / all requested weights. Missing evidence is not a match.',
@@ -77,7 +80,8 @@ export function MatchStudio() {
         <div className={styles.fields}>{(['contentType','format','aspectRatio','platform','style'] as const).map(key=><label className="field" key={key}>
           {{contentType:'Content type',format:'Format',aspectRatio:'Aspect ratio',platform:'Platform',style:'Creative direction'}[key]}
           <Input value={form[key]} maxLength={200} onChange={e=>patch(key,e.target.value)}/></label>)}</div>
-        <label className="field">Budget ceiling (USD)<Input type="number" min="0" value={form.budget} onChange={e=>patch('budget',e.target.value)} placeholder="Optional — unknown until supplied"/></label>
+        <label className="field">Budget ceiling (USD)<Input type="number" min="0" aria-invalid={!!budgetError} aria-describedby={budgetError ? "studio-budget-error" : undefined} value={form.budget} onChange={e=>patch('budget',e.target.value)} placeholder="Optional — unknown until supplied"/></label>
+        {budgetError && <p id="studio-budget-error" role="alert">{budgetError}</p>}
         <label className="field">Commercial-use requirement<select className={styles.select} value={form.commercialUse} onChange={e=>patch('commercialUse',e.target.value)}>
           <option value="Unspecified">Not specified</option><option value="Available">Commercial use required</option><option value="Restricted">Restricted / non-commercial use</option>
         </select></label>
@@ -87,8 +91,8 @@ export function MatchStudio() {
       </Card>
       <section className={styles.results} aria-label="Creator matches">
         <div className={styles.toolbar}><div><Badge tone="purple"><Sparkles size={14}/> Explainable matching</Badge><h2>{hasRequirements ? 'A shortlist backed by evidence.' : 'Start with what you need.'}</h2></div>
-          <Button disabled={selected.length<2 || !hasRequirements} className="ai-action" onClick={()=>setCompared(true)}>Compare {selected.length}/4</Button>
-          <Button disabled={!selected.length} onClick={download}><Download size={16}/> Export shortlist</Button>
+          <Button disabled={selected.length<2 || !hasRequirements || !!budgetError} className="ai-action" onClick={()=>setCompared(true)}>Compare {selected.length}/4</Button>
+          <Button disabled={!selected.length || !!budgetError} onClick={download}><Download size={16}/> Export shortlist</Button>
         </div>
         <p className="small-note">A 95% match means weighted alignment with recorded requirements, not a 95% chance of success. Style and deadlines require human review. Missing data reduces evidence coverage.</p>
         <p role="status" aria-live="polite">{notice}</p>
