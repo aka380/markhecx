@@ -9,7 +9,8 @@ import { users, sessions } from '../models/auth';
 import { creatorDocuments } from '../models/creators';
 import { MongoRateStore, rateLimitIndexes } from '../middleware/rate-store';
 
-test('production requires remote storage and HTTPS origins', () => {
+test('production requires remote storage and uses only HTTPS origins', () => {
+  assert.equal(productionConfiguration({ NODE_ENV: 'production', MONGODB_URI: 'mongodb+srv://cluster.example/db' }).ready, true);
   for (const MONGODB_URI of ['', 'mongodb://127.0.0.1:27017', 'mongodb://localhost:27017'])
     assert.equal(productionConfiguration({ NODE_ENV: 'production', MONGODB_URI, WEB_ORIGINS: 'https://example.com' }).ready, false);
   assert.equal(productionConfiguration({ NODE_ENV: 'production', MONGODB_URI: 'mongodb+srv://cluster.example/db', WEB_ORIGINS: 'https://example.com' }).ready, true);

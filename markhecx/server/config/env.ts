@@ -1,3 +1,4 @@
+import { configuredWebOrigins } from "../runtime-config";
 import { z } from "zod";
 const schema = z.object({
   NODE_ENV: z
@@ -30,7 +31,7 @@ const schema = z.object({
   HECX_TIMEOUT_MS: z.coerce.number().int().min(1000).max(30000).default(25000),
   HECX_PROVIDER: z.enum(["mock", "gemini"]).default("mock"),
 });
-export const config = schema.parse(process.env);
+export const config = schema.parse({ ...process.env, WEB_ORIGINS: configuredWebOrigins(process.env) });
 export const origins = config.WEB_ORIGINS.split(",").map(
   (x) => new URL(x.trim()).origin,
 );

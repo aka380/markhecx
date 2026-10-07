@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? String(error.name) : 'InitializationError';
     console.error(JSON.stringify({ event: 'api_initialization_failed', category }));
     // No credentials, connection strings, or raw database errors in responses/logs.
-    if (!res.headersSent) res.status(503).json({ error: { code: 'service_unavailable', message: 'Account services are temporarily unavailable. Please try again shortly.' } });
+    if (!res.headersSent) res.status(503).json({ error: { code: 'service_unavailable', message: 'Account services are temporarily unavailable. Please try again shortly.' }, ...(req.url?.split('?')[0] === '/api/v1/health' ? { status: 'unavailable', category } : {}) });
     else res.end();
   }
 }
