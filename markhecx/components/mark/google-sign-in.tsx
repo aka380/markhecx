@@ -56,7 +56,9 @@ export function GoogleSignIn({
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [attempt, retry] = useState(0);
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const clientId =
+    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+    "665821156538-a5fla25a4sskchom3qev6p4mmgp0k0lh.apps.googleusercontent.com";
   useEffect(() => {
     if (!clientId) return;
     let active = true;
