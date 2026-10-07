@@ -1,4 +1,4 @@
-name: Deploy MarkHECX
+name: Verify MarkHECX for Vercel
 
 on:
   push:
@@ -6,10 +6,17 @@ on:
     paths:
       - "markhecx/**"
       - ".github/workflows/deploy-markhecx.yml"
+      - "vercel.json"
+  pull_request:
+    branches: [main]
+    paths:
+      - "markhecx/**"
+      - ".github/workflows/deploy-markhecx.yml"
+      - "vercel.json"
   workflow_dispatch:
 
 concurrency:
-  group: markhecx-production
+  group: markhecx-verify-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -20,15 +27,9 @@ defaults:
     working-directory: markhecx
 
 jobs:
-  verify-and-deploy:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      NEXT_PUBLIC_API_URL: /api/v1
-      NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ vars.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
-      MARKHECX_API_URL: ${{ vars.MARKHECX_API_URL }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -52,14 +53,11 @@ jobs:
       - name: Run matching benchmark
         run: npm run test:matching
 
-      - name: Validate deployment configuration
-        run: |
-          test -n "$MARKHECX_API_URL" || { echo "Add MARKHECX_API_URL as a GitHub Actions repository variable."; exit 1; }
-          test -n "$CLOUDFLARE_API_TOKEN" || { echo "Add CLOUDFLARE_API_TOKEN as a GitHub Actions repository secret."; exit 1; }
-          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "Add CLOUDFLARE_ACCOUNT_ID as a GitHub Actions repository secret."; exit 1; }
+      - name: Type-check and bundle the API
+        run: npm run backend:build
 
       - name: Build production application
-        run: npm run build:cloudflare
+        run: npm run build
 
-      - name: Deploy Cloudflare Worker
-        run: npx wrangler deploy --config dist/server/wrangler.json --name markhecx
+      # Vercel's existing Git integration deploys main automatically.
+      # Production credentials remain in Vercel; no Cloudflare deployment is used.

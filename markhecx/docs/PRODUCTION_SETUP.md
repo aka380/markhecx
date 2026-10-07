@@ -39,3 +39,8 @@ An unavailable backend no longer signs anyone into browser-local demo storage. E
 ## Local development and checks
 
 `npm run dev` runs Next.js and the API together on port 3001, reading `server/.env`. A local MongoDB replica set is still required. `npm run build`, `npm run backend:build`, `npm run test:regression`, and `npm run test:backend` check the integrated application. Backend tests use the isolated `markhecx_test` database.
+
+
+## GitHub release workflow
+
+`.github/workflows/deploy-markhecx.yml` runs lint, frontend regressions, the matching benchmark, API type-check/bundling, and the Next.js production build on changes to main and pull requests. The connected Vercel Git integration deploys main. GitHub Actions does not need Cloudflare credentials or the retired `MARKHECX_API_URL` setting. These are independent checks: a Vercel deployment marked Ready does not itself confirm a GitHub Actions run passed.
