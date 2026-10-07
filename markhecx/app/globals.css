@@ -193,16 +193,39 @@ p {
   white-space: nowrap;
 }
 .brand-accent {
-  color: #a78bfa;
+  background: linear-gradient(110deg, #ff4da6 8%, #c55cff 48%, #8b7cff 92%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .brand-icon {
-  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  background:
+    radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.35), transparent 30%),
+    linear-gradient(135deg, #ff2f92 0%, #c13cff 48%, #6d5cff 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 24px rgba(193, 60, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
   height: 34px;
   width: 34px;
   display: grid;
   place-items: center;
   border-radius: 10px;
   color: white;
+  overflow: hidden;
+  position: relative;
+}
+.brand-icon::after {
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.2) 48%, transparent 72%);
+  content: "";
+  inset: 0;
+  position: absolute;
+  transform: translateX(-65%);
+}
+.brand-hash {
+  filter: drop-shadow(0 1px 2px rgba(26, 8, 38, 0.55));
+  position: relative;
+  z-index: 1;
 }
 .brand.small .brand-icon {
   width: 46px;

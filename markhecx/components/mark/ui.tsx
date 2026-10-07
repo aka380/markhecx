@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { UserRound, Sparkles } from "lucide-react";
+import { Hash, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -90,7 +90,7 @@ export function Brand({ small = false }: { small?: boolean }) {
   return (
     <span className={`brand ${small ? "small" : ""}`}>
       <span className="brand-icon">
-        <Sparkles size={21} />
+        <Hash className="brand-hash" size={21} strokeWidth={3} />
       </span>
       {!small && (
         <span>
