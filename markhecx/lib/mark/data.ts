@@ -3,6 +3,7 @@ import { searchCreatorPool } from "./creator-search";
 export type Creator = {
   creative?: CreativeCapabilities;
   avatar?: string;
+  banner?: string;
   source?: "sample" | "local";
   availability?: "Available" | "Open to Opportunities" | "Not specified";
   experienceLevel?: "Beginner" | "Intermediate" | "Advanced";
@@ -287,6 +288,8 @@ export const creators: Creator[] = [
     id: "demo-zoya-rao",
     name: "Zoya Rao",
     username: "zoyaframes",
+    avatar: "/samples/profiles/zoya-rao.jpg",
+    banner: "/samples/neon-motorcycle.jpg",
     identity: "AI Filmmaker",
     category: "AI & Data",
     categories: ["AI & Data", "Design", "Marketing"],
@@ -326,6 +329,8 @@ export const creators: Creator[] = [
     id: "demo-mira-sen",
     name: "Mira Sen",
     username: "miragenerative",
+    avatar: "/samples/profiles/mira-sen.jpg",
+    banner: "/samples/skincare-campaign.jpg",
     identity: "Generative Art Director",
     category: "Design",
     categories: ["Design", "Marketing"],
@@ -347,6 +352,8 @@ export const creators: Creator[] = [
     id: "demo-arjun-kale",
     name: "Arjun Kale",
     username: "arjunanimates",
+    avatar: "/samples/profiles/arjun-kale.jpg",
+    banner: "/samples/robot-garden.jpg",
     identity: "AI Animator",
     category: "Design",
     categories: ["Design", "AI & Data"],
@@ -372,9 +379,10 @@ export const creators: Creator[] = [
     category: "Development",
     categories: ["Development", "AI & Data"],
     avatar: "/samples/profiles/dev-malik.jpg",
+    banner: "/samples/profiles/dev-malik.jpg",
     bio: "Fictional demo developer building reliable AI product prototypes, integrations and internal tools.",
     skills: ["AI integrations", "API engineering", "System design", "Evaluation pipelines"],
-    projects: [{ name: "Support Copilot", detail: "Fictional customer-support workspace with retrieval, human review and source citations." }],
+    projects: [{ name: "Support Copilot", detail: "Fictional customer-support workspace demonstrating AI integrations, API engineering, retrieval, human review and source citations." }],
     creative: {
       specialization: "AI product development", tools: ["React", "Node.js", "PostgreSQL"], models: ["Gemini"],
       contentTypes: ["Web application", "AI prototype"], formats: ["Responsive web app"], aspectRatio: "Responsive",
@@ -394,9 +402,10 @@ export const creators: Creator[] = [
     category: "Management",
     categories: ["Management", "Marketing"],
     avatar: "/samples/profiles/lena-brooks.jpg",
+    banner: "/samples/profiles/lena-brooks.jpg",
     bio: "Fictional demo manager coordinating creative teams, campaign timelines, approvals and delivery.",
     skills: ["Project management", "Creative operations", "Client communication", "Production planning"],
-    projects: [{ name: "Launch Control", detail: "Fictional multi-channel launch plan coordinating creators, review rounds, licensing and final delivery." }],
+    projects: [{ name: "Launch Control", detail: "Fictional project management and creative operations plan coordinating creators, review rounds, licensing and final delivery." }],
     creative: {
       specialization: "Creative production management", tools: ["Notion", "Asana", "Slack"], models: [],
       contentTypes: ["Campaign operations", "Production plan"], formats: ["Campaign workspace"], aspectRatio: "Not applicable",
@@ -416,6 +425,7 @@ export const creators: Creator[] = [
     category: "Marketing",
     categories: ["Marketing", "Design"],
     avatar: "/samples/profiles/kabir-mehta.jpg",
+    banner: "/samples/profiles/kabir-mehta.jpg",
     bio: "Fictional demo strategist helping early-stage brands clarify positioning, voice and campaign direction.",
     skills: ["Brand strategy", "Positioning", "Audience research", "Creative direction"],
     projects: [{ name: "Northstar Rebrand", detail: "Fictional positioning and launch system for a sustainable consumer technology company." }],
@@ -438,9 +448,10 @@ export const creators: Creator[] = [
     category: "Marketing",
     categories: ["Marketing", "Writing", "Design"],
     avatar: "/samples/profiles/sofia-alvarez.jpg",
+    banner: "/samples/profiles/sofia-alvarez.jpg",
     bio: "Fictional demo creator producing approachable short-form product stories for social campaigns.",
     skills: ["Short-form video", "UGC", "Scriptwriting", "Video editing"],
-    projects: [{ name: "Everyday Reset", detail: "Fictional vertical content series demonstrating a wellness product through practical daily routines." }],
+    projects: [{ name: "Everyday Reset", detail: "Fictional short-form video and UGC series demonstrating a wellness product through practical daily routines." }],
     creative: {
       specialization: "Short-form branded content", tools: ["CapCut", "Premiere Pro", "Canva"], models: [],
       contentTypes: ["UGC", "Social video", "Product demo"], formats: ["Vertical video", "Reel"], aspectRatio: "9:16",

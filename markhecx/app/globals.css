@@ -556,6 +556,32 @@ p {
   padding: 15px 18px;
   overflow: hidden;
 }
+.creator-cover.has-banner {
+  background-position: center;
+  background-size: cover;
+}
+.creator-cover.has-banner::after {
+  background: linear-gradient(90deg, rgba(8, 8, 12, 0.78), rgba(8, 8, 12, 0.16));
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+.creator-cover.has-banner > * {
+  position: relative;
+  z-index: 1;
+}
+.sample-profile-banner {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  height: clamp(170px, 28vw, 360px);
+  margin: 18px 0 26px;
+  overflow: hidden;
+}
+.sample-profile-banner img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
 .violet {
   --avatar-bg: #24242a;
   --avatar-fg: #a78bfa;

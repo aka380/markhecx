@@ -32,7 +32,10 @@ export function CreatorCard({
   const profileHref = `/profile/${encodeURIComponent(c.username)}${query}`;
   return (
     <Card interactive className="creator-card">
-      <div className={`creator-cover ${c.color}`}>
+      <div
+        className={`creator-cover ${c.color} ${c.banner ? "has-banner" : ""}`}
+        style={c.banner ? { backgroundImage: `url(${c.banner})` } : undefined}
+      >
         <span className="cover-label">{c.category}</span>
         <Button
           variant="ghost"

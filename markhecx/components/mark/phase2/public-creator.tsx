@@ -109,6 +109,11 @@ export function PublicCreatorProfile({
             : "Sample creator · fictional profile"
         }
       />
+      {c.banner && (
+        <div className="sample-profile-banner" aria-label={`${c.name} sample banner`}>
+          <img src={c.banner} alt={`${c.name} fictional portfolio banner`} />
+        </div>
+      )}
       {!hasPortfolio(c) && (
         <EmptyState
           title="No public portfolio yet"
