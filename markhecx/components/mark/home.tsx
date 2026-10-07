@@ -8,6 +8,7 @@ import { CreatorCard } from "./creator-card";
 export function HomePage() {
   const { state } = useApp();
   const creators = useDiscoveryCreators();
+  const sampleCreators = creators.filter((creator) => creator.source === "sample");
   if (state.signedIn && state.accountType === "Brand")
     return <BrandDashboard />;
   return (
@@ -146,20 +147,26 @@ export function HomePage() {
       <section className="home-creators">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">GOOD COMPANY</span>
-            <h2>Meet the minds making things.</h2>
+            <span className="eyebrow">AI CREATOR SHOWCASE</span>
+            <h2>Explore sample AI creator profiles.</h2>
+            <p className="section-copy">
+              See how brands can evaluate portfolios, tools, workflows and
+              commercial readiness before inviting a creator.
+            </p>
           </div>
           <Action href="/creators" secondary>
             Discover all creators
           </Action>
         </div>
         <div className="creator-grid">
-          {creators.slice(0, 3).map((c) => (
+          {sampleCreators.slice(0, 3).map((c) => (
             <CreatorCard key={c.id} creator={c} />
           ))}
         </div>
         <p className="sample-footnote">
-          Fictional samples are clearly labelled. Real published profiles use information supplied by each creator.
+          These fictional samples demonstrate AI filmmaking, generative art
+          direction and AI animation. Real published profiles use information
+          supplied by each creator.
         </p>
       </section>
     </div>
