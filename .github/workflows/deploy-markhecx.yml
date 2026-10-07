@@ -59,8 +59,7 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "Add CLOUDFLARE_ACCOUNT_ID as a GitHub Actions repository secret."; exit 1; }
 
       - name: Build production application
-        run: npm run build
+        run: npm run build:cloudflare
 
       - name: Deploy Cloudflare Worker
         run: npx wrangler deploy --config dist/server/wrangler.json --name markhecx
-
