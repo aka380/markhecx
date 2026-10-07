@@ -1,5 +1,17 @@
 # MarkHECX: AI creator marketplace
 
+## Submission links and description
+
+- Live prototype: https://markhecx.vercel.app
+- No-account interactive demo: https://markhecx.vercel.app/studio
+- Source repository: https://github.com/aka380/markhecx
+- Creator discovery: https://markhecx.vercel.app/creators
+- Campaigns: https://markhecx.vercel.app/campaigns
+
+**Submission description:** MarkHECX connects brands and agencies with AI-native creators through tool-aware portfolios, structured creative briefs and explainable creator matching. The prototype combines Gemini-assisted brief drafting and account-based collaboration with a public, deterministic comparison studio that exposes each score’s factors, missing evidence and commercial-rights questions.
+
+Start the judging demo in Match Studio; no account is needed. The seven showcase creators and their media are fictional/illustrative. Real campaign creation and collaboration require a Brand/Individual or Creator account. Do not describe sample profiles as available hires or self-declared evidence as independent verification.
+
 ## Three-minute demo
 
 1. Open `/studio` from the homepage's **Find my AI creator** action. No sign-in is needed. Explain that the seven creators and media are illustrative demo records.
@@ -42,3 +54,15 @@ Production build and regression suite cover the app. New regression checks disti
 Search filters now apply to sample and live results, active AI filters are removable, public filter choices remain available after narrowing results, and backend failures surface a retry action. Name relevance and published-project count are ordered before server pagination.
 
 Production email still needs a verified sending domain to reach arbitrary recipients. Delivery/revision coordination currently uses engagement conversations and campaign status; there is no escrow/payment system or independent tool/license certification.
+
+
+## Release verification — 7 October 2026
+
+- Production health returned `status: ok`, `database: connected`.
+- Home, Studio, Creators, Campaigns, campaign builder, HECX and Premium returned HTTP 200. Authenticated routes still enforce their account requirements.
+- The latest application build passed; the preceding full regression run passed 92 frontend and 30 backend tests. The Studio fix also passed 29 marketplace tests and all seven matching scenarios.
+- Browser checks confirmed shortlist comparison, corrected preset content matching, rejection of negative budgets and no console errors in the checked flows.
+- The exported decision JSON was found in Downloads and validated: two shortlisted creators, factor evidence and a comparison result were present.
+- Mobile discovery and portfolio dialogs were checked at 390px; desktop discovery filters at 1280px. This is targeted coverage, not a claim that every device or browser was tested.
+
+The prototype is ready to demonstrate with the limitations stated above. A verified email-sending domain remains necessary for password-recovery delivery to arbitrary users. The hosting environment and third-party quotas can affect live services.
