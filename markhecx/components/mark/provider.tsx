@@ -48,6 +48,9 @@ export function useApp() {
   return ctx;
 }
 type Workspace = { state: AppState; revision: number };
+type AccountChoice = "Creator" | "Brand / Agency" | "Client / Individual";
+const accountRole = (choice: AccountChoice): "Creator" | "Brand" =>
+  choice === "Creator" ? "Creator" : "Brand";
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(emptyState),
     [ready, setReady] = useState(false),
@@ -59,7 +62,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     generation = useRef(0),
     queue = useRef<Promise<unknown>>(Promise.resolve());
   const router = useRouter();
-  const [role, setRole] = useState<"Creator" | "Brand">("Creator"),
+  const [role, setRole] = useState<AccountChoice>("Creator"),
     [auth, setAuth] = useState(""),
     [name, setName] = useState(""),
     [email, setEmail] = useState(""),
@@ -338,7 +341,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           </DialogDescription>
           {auth && auth !== "Reset" && (
             <GoogleSignIn
-              role={role}
+              role={accountRole(role)}
               localMode={localMode}
               onSession={async (session) => {
                 if (localMode) {
@@ -382,9 +385,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                     const next = {
                       ...live.current,
                       signedIn: true,
-                      accountType: role,
+                      accountType: accountRole(role),
                       profile:
-                        role === "Creator"
+                        accountRole(role) === "Creator"
                           ? {
                               ...live.current.profile,
                               name: name.trim() || "Demo Creator",
@@ -392,14 +395,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                           : live.current.profile,
                     };
                     assign(next);
+                    const selectedRole = accountRole(role);
                     setUser({
-                      id: role === "Brand" ? "local-brand" : "local",
+                      id: selectedRole === "Brand" ? "local-brand" : "local",
                       name: name.trim() || role,
                       email: "local@markhecx.demo",
-                      role,
+                      role: selectedRole,
                     });
                     setAuth("");
-                    router.push(role === "Brand" ? "/brand" : "/profile");
+                    router.push(selectedRole === "Brand" ? "/brand" : "/profile");
                     toast.success("Your browser workspace is ready.");
                     return;
                   }
@@ -411,7 +415,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                     quiet: true,
                     body:
                       auth === "Sign Up"
-                        ? { name, role, email, password }
+                        ? { name, role: accountRole(role), email, password }
                         : { email, password },
                   });
                   await load(session);
@@ -432,8 +436,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                     <Choice
                       label="Account type"
                       value={role}
-                      options={["Creator", "Brand"]}
-                      onChange={(v) => setRole(v as "Creator" | "Brand")}
+                      options={["Creator", "Brand / Agency", "Client / Individual"]}
+                      onChange={(v) => setRole(v as AccountChoice)}
                     />
                   </label>
                   <label className="field">
@@ -447,6 +451,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                     />
                   </label>
                 </>
+              )}
+              {localMode && (
+                <p className="small-note">
+                  Creators build portfolios. Brands, agencies, and individual
+                  clients can publish briefs, compare creators, and hire talent.
+                </p>
               )}
               {!localMode && <label className="field">
                 Email

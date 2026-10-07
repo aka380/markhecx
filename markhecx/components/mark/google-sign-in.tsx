@@ -138,6 +138,10 @@ export function GoogleSignIn({
           size: "large",
           text: link ? "continue_with" : "signin_with",
           shape: "pill",
+          width: Math.max(
+            200,
+            Math.min(400, Math.floor(element.current.getBoundingClientRect().width)),
+          ),
         });
       } catch (e) {
         if (active) setError((e as Error).message);
@@ -154,10 +158,13 @@ export function GoogleSignIn({
       <p className="small-note">Google Sign-In is currently unavailable.</p>
     );
   return (
-    <div>
+    <div style={{ width: "100%", overflow: "hidden" }}>
       <div
         ref={element}
-        style={busy ? { pointerEvents: "none", opacity: 0.6 } : undefined}
+        style={{
+          width: "100%",
+          ...(busy ? { pointerEvents: "none", opacity: 0.6 } : {}),
+        }}
       />
       {busy && <p role="status">Verifying Google identity…</p>}
       {error && (
