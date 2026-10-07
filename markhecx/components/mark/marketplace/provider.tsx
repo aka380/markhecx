@@ -10,8 +10,9 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { MarketplaceState, Actor } from "@/lib/mark/marketplace/models";
-import { api, dataChanged } from "@/lib/mark/api/client";
+import { api, APIError, dataChanged } from "@/lib/mark/api/client";
 import { emptyMarketplace, persistMarket } from "@/lib/mark/api/marketplace";
+import { initialMarketplace } from "@/lib/mark/marketplace/fixtures";
 import { useApp } from "../provider";
 import { Button } from "../ui";
 const Context = createContext<{
@@ -60,7 +61,18 @@ export function MarketplaceProvider({
         })
         .catch((e) => {
           if (!controller.signal.aborted) {
-            setError(e.message);
+            if (
+              !state.signedIn &&
+              e instanceof APIError &&
+              [0, 503].includes(e.status)
+            ) {
+              const fallback = initialMarketplace();
+              live.current = fallback;
+              setData(fallback);
+              setError("");
+            } else {
+              setError(e.message);
+            }
             setReady(true);
           }
         });

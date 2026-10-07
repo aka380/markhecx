@@ -105,7 +105,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (current !== generation.current) return;
         clear();
         setReady(true);
-        if (!(e instanceof APIError && e.status === 401))
+        if (
+          !(
+            e instanceof APIError &&
+            [0, 401, 503].includes(e.status)
+          )
+        )
           setError(
             e instanceof Error ? e.message : "Could not load your account.",
           );
