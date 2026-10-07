@@ -112,6 +112,14 @@ export const responseSchema = z
   .strict();
 export type HecxResult = z.infer<typeof responseSchema>;
 export interface AIProvider {
+  compareCreators?(
+    campaign: import("../marketplace/models").Campaign,
+    candidates: {
+      creator: import("../data").Creator;
+      match: import("../marketplace/models").CreatorMatch;
+    }[],
+    signal?: AbortSignal,
+  ): Promise<import("./comparison").CreatorComparison>;
   brief?(prompt: string): Promise<import("../creative").BriefDraft>;
   campaign?(
     action: string,

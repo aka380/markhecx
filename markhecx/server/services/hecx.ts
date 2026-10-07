@@ -88,6 +88,44 @@ export function backendHECX(provider: AIProvider = MockHECXProvider) {
       context.deterministicMatch = match;
       return { match, analysis: await provider.analyze(context) };
     },
+    async compareCreators(user: User, campaignId: string, creatorIds: string[]) {
+      if (user.role !== "Brand")
+        throw new ApiError(403, "forbidden", "A Brand account is required.");
+      const campaign = (await campaigns.findOne({ _id: campaignId }))?.data;
+      if (!campaign || campaign.brandId !== user._id)
+        throw new ApiError(404, "not_found", "Campaign not found.");
+      const creators = (await listCreators()).filter(
+        (creator): creator is NonNullable<typeof creator> =>
+          !!creator && creatorIds.includes(creator.id),
+      );
+      if (creators.length !== creatorIds.length)
+        throw new ApiError(404, "not_found", "Creator evidence unavailable.");
+      const matches = matchingService.matchCreatorsToCampaign(campaign, creators);
+      const candidates = creatorIds.map((creatorId) => ({
+        creator: creators.find((creator) => creator.id === creatorId)!,
+        match: matches.find((match) => match.creatorId === creatorId)!,
+      }));
+      if (provider.compareCreators)
+        return provider.compareCreators(campaign, candidates);
+      const ranked = [...matches].sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+      return {
+        campaignId,
+        recommendedCreatorId: ranked[0]?.coverage >= 50 ? ranked[0].creatorId : null,
+        summary:
+          ranked[0]?.coverage >= 50
+            ? "The recommendation follows the strongest evidence-backed requirement match."
+            : "There is not enough evidence to recommend one creator responsibly.",
+        rankedCreatorIds: ranked.map((match) => match.creatorId),
+        candidates: candidates.map(({ creator, match }) => ({
+          creatorId: creator.id,
+          verdict: match.explanation,
+          strengthFactorKeys: match.factors.filter((factor) => factor.value !== null && factor.value > 0).slice(0, 6).map((factor) => factor.key),
+          concernFactorKeys: match.factors.filter((factor) => factor.value === null || factor.value === 0).slice(0, 6).map((factor) => factor.key),
+        })),
+        nextQuestions: ["Confirm availability, scope, final rates and usage rights directly before hiring."],
+        provider: "HECX · Deterministic comparison" as const,
+      };
+    },
     async analyze(user: User, options: HecxOptions) {
       const workspace = await creatorWorkspace(user);
       const preferences = await memories

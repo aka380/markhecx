@@ -250,15 +250,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
               Premium: Gem,
               More: Ellipsis,
             }[group];
-            if (group === "HECX")
+            if (group === "HECX" || group === "Premium")
               return (
                 <Link
                   key={group}
-                  className={`nav-item ${path === "/hecx" ? "active" : ""}`}
-                  href="/hecx"
+                  className={`nav-item ${group === "Premium" ? "premium-nav" : ""} ${path === (group === "HECX" ? "/hecx" : "/premium") ? "active" : ""}`}
+                  href={group === "HECX" ? "/hecx" : "/premium"}
                 >
                   <Icon />
-                  <span>HECX</span>
+                  <span>{group}</span>
                 </Link>
               );
             return (

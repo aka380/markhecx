@@ -2271,6 +2271,24 @@ p {
 .premium-features .mark-badge {
   font-size: 12px;
 }
+
+.hecx-compare-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 20px 0;
+  border-color: color-mix(in srgb, var(--purple) 45%, var(--border));
+}
+.hecx-compare-bar h3 { margin: 10px 0 4px; }
+.match-compare-select { margin-bottom: 8px; }
+.hecx-comparison-dialog { max-width: 860px; max-height: 88vh; overflow-y: auto; }
+.comparison-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.comparison-winner { border-color: var(--purple); }
+@media (max-width: 720px) {
+  .hecx-compare-bar { align-items: stretch; flex-direction: column; }
+  .comparison-list { grid-template-columns: 1fr; }
+}
 .selected-card {
   border-color: #8b5cf6;
   background: #24242a;

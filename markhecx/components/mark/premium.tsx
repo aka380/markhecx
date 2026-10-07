@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import {
   Gem,
   Sparkles,
@@ -20,8 +19,6 @@ import { premiumFeatures } from "@/lib/mark/data";
 import { Card, Badge, Button, Action } from "./ui";
 const icons = [Sparkles, ChartNoAxesCombined, PanelsTopLeft, Users, Infinity];
 export function PremiumPage() {
-  const params = useSearchParams();
-  const feature = params.get("feature") || "Premium";
   const [open, setOpen] = useState(false);
   return (
     <div className="page-enter">
@@ -106,7 +103,7 @@ export function PremiumPage() {
           return (
             <Card
               key={name}
-              className={`panel ${feature === name ? "selected-card" : ""}`}
+              className="panel"
             >
               <Icon className="accent-icon" size={24} />
               <h3>{name}</h3>
@@ -116,18 +113,6 @@ export function PremiumPage() {
           );
         })}
       </div>
-      {feature === "Upgrade" && (
-        <div className="upgrade-banner">
-          <h3>Ready when the next chapter is.</h3>
-          <p>
-            Premium upgrades are not available in Phase 1. No payment details
-            are collected.
-          </p>
-          <Button className="btn-secondary" onClick={() => setOpen(true)}>
-            View upgrade status
-          </Button>
-        </div>
-      )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="mark-dialog">
           <Gem className="accent-icon" size={28} />

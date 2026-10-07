@@ -64,6 +64,8 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { safeLink } from "@/lib/mark/store";
+import { api } from "@/lib/mark/api/client";
+import type { CreatorComparison } from "@/lib/mark/hecx/comparison";
 export function BrandDashboard({ analytics = false }: { analytics?: boolean }) {
   return (
     <Access role="Brand">
@@ -1134,6 +1136,9 @@ function Matches({ id }: { id: string }) {
     [minimum, setMinimum] = useState(0),
     [sort, setSort] = useState("Best match"),
     [detail, setDetail] = useState<CreatorMatch | null>(null),
+    [selectedCreators, setSelectedCreators] = useState<string[]>([]),
+    [comparison, setComparison] = useState<CreatorComparison | null>(null),
+    [comparing, setComparing] = useState(false),
     [error, setError] = useState(false),
     [retry, setRetry] = useState(0);
   const matching = useMatches();
@@ -1273,6 +1278,41 @@ function Matches({ id }: { id: string }) {
           {filters}
         </details>
       </div>
+      <Card className="panel hecx-compare-bar">
+        <div>
+          <Badge tone="purple">HECX · Gemini comparison</Badge>
+          <h3>Compare shortlisted creators</h3>
+          <p className="small-note">
+            Select 2–4 people. HECX uses their verified profiles and the campaign’s calculated requirement factors to recommend the strongest fit.
+          </p>
+        </div>
+        <Button
+          className="ai-action"
+          disabled={selectedCreators.length < 2 || comparing}
+          onClick={async () => {
+            setComparing(true);
+            setComparison(null);
+            try {
+              setComparison(
+                await api<CreatorComparison>("/hecx/compare-creators", {
+                  method: "POST",
+                  body: { campaignId: id, creatorIds: selectedCreators },
+                }),
+              );
+            } catch (cause) {
+              toast.error(
+                cause instanceof Error ? cause.message : "HECX comparison failed.",
+              );
+            } finally {
+              setComparing(false);
+            }
+          }}
+        >
+          {comparing
+            ? "HECX is comparing…"
+            : `Compare ${selectedCreators.length || "selected"}`}
+        </Button>
+      </Card>
       <div className="mobile-campaign-filters">
         <Sheet>
           <SheetTrigger asChild>
@@ -1315,6 +1355,25 @@ function Matches({ id }: { id: string }) {
               return (
                 <div key={m.creatorId} className="match-result">
                   <Card className="panel match-summary">
+                    <label className="check-label match-compare-select">
+                      <input
+                        type="checkbox"
+                        checked={selectedCreators.includes(m.creatorId)}
+                        disabled={
+                          !selectedCreators.includes(m.creatorId) &&
+                          selectedCreators.length >= 4
+                        }
+                        onChange={(event) => {
+                          setComparison(null);
+                          setSelectedCreators((current) =>
+                            event.target.checked
+                              ? [...current, m.creatorId]
+                              : current.filter((id) => id !== m.creatorId),
+                          );
+                        }}
+                      />
+                      Compare creator
+                    </label>
                     <Badge tone="purple">
                       {m.score === null
                         ? "Insufficient evidence"
@@ -1354,6 +1413,76 @@ function Matches({ id }: { id: string }) {
               Evidence-based comparison with {c.title}.
             </DialogDescription>
             <MatchAnalysis match={detail} />
+          </DialogContent>
+        </Dialog>
+      )}
+      {comparison && (
+        <Dialog open onOpenChange={(value) => !value && setComparison(null)}>
+          <DialogContent className="mark-dialog campaign-dialog hecx-comparison-dialog">
+            <DialogTitle>HECX creator recommendation</DialogTitle>
+            <DialogDescription>{comparison.summary}</DialogDescription>
+            <Badge tone="purple">{comparison.provider}</Badge>
+            {comparison.recommendedCreatorId ? (
+              <Card className="panel comparison-winner">
+                <span className="eyebrow">RECOMMENDED FOR THIS BRIEF</span>
+                <h3>
+                  {pool.find(
+                    (creator) => creator.id === comparison.recommendedCreatorId,
+                  )?.name || "Selected creator"}
+                </h3>
+                <p>
+                  {
+                    computed.matches.find(
+                      (match) =>
+                        match.creatorId === comparison.recommendedCreatorId,
+                    )?.score
+                  }
+                  % requirement match
+                </p>
+              </Card>
+            ) : (
+              <p>HECX needs more creator evidence before recommending one person.</p>
+            )}
+            <div className="comparison-list">
+              {comparison.rankedCreatorIds.map((creatorId, index) => {
+                const creator = pool.find((item) => item.id === creatorId);
+                const match = computed.matches.find(
+                  (item) => item.creatorId === creatorId,
+                );
+                const insight = comparison.candidates.find(
+                  (item) => item.creatorId === creatorId,
+                );
+                const factors = new Map(
+                  match?.factors.map((factor) => [factor.key, factor]),
+                );
+                return (
+                  <Card className="panel" key={creatorId}>
+                    <span className="eyebrow">#{index + 1} · {match?.score ?? "—"}% MATCH</span>
+                    <h3>{creator?.name || "Creator"}</h3>
+                    <p>{insight?.verdict}</p>
+                    {insight?.strengthFactorKeys.map((key) => (
+                      <p key={key}>✓ {factors.get(key)?.evidence}</p>
+                    ))}
+                    {insight?.concernFactorKeys.map((key) => (
+                      <p className="small-note" key={key}>Check: {factors.get(key)?.evidence}</p>
+                    ))}
+                    <Action href={`/creators/${creatorId}`} secondary>
+                      View creator
+                    </Action>
+                  </Card>
+                );
+              })}
+            </div>
+            {!!comparison.nextQuestions.length && (
+              <div>
+                <h3>Verify before choosing</h3>
+                <ul>
+                  {comparison.nextQuestions.map((question) => (
+                    <li key={question}>{question}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       )}

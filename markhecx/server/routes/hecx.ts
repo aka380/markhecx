@@ -151,3 +151,30 @@ hecxRoutes.post("/match-explanation", async (req, res) => {
     ),
   );
 });
+hecxRoutes.post("/compare-creators", async (req, res) => {
+  const body = z
+    .object({
+      campaignId: z.string().min(1).max(100),
+      creatorIds: z.array(z.string().min(1).max(100)).min(2).max(4),
+    })
+    .strict()
+    .refine((value) => new Set(value.creatorIds).size === value.creatorIds.length)
+    .parse(req.body);
+  try {
+    res.json(
+      await hecxBackend.compareCreators(
+        res.locals.user,
+        body.campaignId,
+        body.creatorIds,
+      ),
+    );
+  } catch (e) {
+    if (e instanceof HecxError)
+      throw new ApiError(
+        e.code === "timeout" ? 504 : e.code === "rate_limit" ? 429 : 503,
+        e.code,
+        errorMessage(e),
+      );
+    throw e;
+  }
+});
