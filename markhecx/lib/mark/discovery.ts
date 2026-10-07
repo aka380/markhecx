@@ -378,6 +378,7 @@ export function safeDiscoveryReturn(value: string | null) {
 }
 export function sampleProfile(c: Creator): CreatorProfile {
   return {
+    creative: c.creative,
     name: c.name,
     username: c.username,
     identity: c.identity,
@@ -402,14 +403,18 @@ export function sampleProjects(c: Creator): Project[] {
     ownerId: c.id,
     title: p.name,
     description: p.detail,
-    problem: "",
-    solution: "",
-    contribution: "",
-    techStack: [],
+    creative: p.creative || c.creative,
+    problem: "Illustrative sample brief for marketplace evaluation.",
+    solution: p.detail,
+    contribution: p.creative?.humanContribution || c.creative?.humanContribution || "",
+    techStack: p.creative?.tools || c.creative?.tools || [],
     tags: [],
     github: "",
-    liveDemo: "",
-    media: [],
+    liveDemo: p.video || "",
+    media: [
+      ...(p.image ? [{ id: `${c.id}-${i}-image`, type: "image" as const, url: p.image, alt: `${p.name} fictional sample artwork` }] : []),
+      ...(p.video ? [{ id: `${c.id}-${i}-video`, type: "video" as const, url: p.video, alt: `${p.name} illustrative sample video` }] : []),
+    ],
     date: "",
     status: "Published",
     updatedAt: "",

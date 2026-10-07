@@ -17,7 +17,13 @@ export type Creator = {
   category: string;
   bio: string;
   skills: string[];
-  projects: { name: string; detail: string }[];
+  projects: {
+    name: string;
+    detail: string;
+    image?: string;
+    video?: string;
+    creative?: CreativeCapabilities;
+  }[];
   badge: string;
   color: string;
   featured: boolean;
@@ -276,6 +282,87 @@ export const creators: Creator[] = [
     experienceLevel: "Advanced",
     joinedAt: "2026-10-01",
     publicPortfolio: true,
+  },
+  {
+    id: "demo-zoya-rao",
+    name: "Zoya Rao",
+    username: "zoyaframes",
+    identity: "AI Filmmaker",
+    category: "AI & Data",
+    categories: ["AI & Data", "Design", "Marketing"],
+    bio: "Fictional demo creator focused on cinematic product films and AI-assisted post-production.",
+    skills: ["AI filmmaking", "Art direction", "Video editing", "Compositing"],
+    projects: [{
+      name: "Afterlight Mobility",
+      detail: "Fictional electric-mobility campaign study exploring cinematic product motion and neon environments.",
+      image: "/samples/neon-motorcycle.jpg",
+      video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      creative: {
+        specialization: "Cinematic AI product films",
+        tools: ["Runway", "After Effects", "DaVinci Resolve"],
+        models: ["Gen-3"], contentTypes: ["Product film", "Social video"],
+        formats: ["Video", "Campaign cutdown"], aspectRatio: "16:9",
+        platforms: ["YouTube", "Instagram"],
+        workflow: "Storyboard, generate controlled shots, composite product details, edit and color grade.",
+        workflowSteps: ["Storyboard", "Generate", "Composite", "Edit", "Grade"],
+        humanContribution: "Creative direction, shot selection, compositing, edit and color grade.",
+        sourceAssets: "Fictional product references created for this demo.",
+        toolEvidence: ["Demo generation contact sheet"], workflowEvidence: ["Demo shot-to-edit breakdown"],
+        pastWorkEvidence: [], commercialUse: "Available", minimumBudget: 1800, currency: "USD",
+      },
+    }],
+    creative: {
+      specialization: "Cinematic AI product films", tools: ["Runway", "After Effects", "DaVinci Resolve"], models: ["Gen-3"],
+      contentTypes: ["Product film", "Social video"], formats: ["Video", "Campaign cutdown"], aspectRatio: "16:9",
+      platforms: ["YouTube", "Instagram"], workflow: "Concept to generated shots, compositing, edit and grade.",
+      workflowSteps: ["Concept", "Storyboard", "Generate", "Composite", "Deliver"], humanContribution: "Direction and post-production.", sourceAssets: "Brand product references.",
+      toolEvidence: ["Demo generation contact sheet"], workflowEvidence: ["Demo process breakdown"], pastWorkEvidence: [],
+      commercialUse: "Available", minimumBudget: 1800, currency: "USD",
+    },
+    badge: "Sample · AI film", color: "violet", featured: true, trending: true,
+    tags: ["Cinematic", "Product", "AI video"], availability: "Available", experienceLevel: "Advanced", publicPortfolio: true, source: "sample",
+  },
+  {
+    id: "demo-mira-sen",
+    name: "Mira Sen",
+    username: "miragenerative",
+    identity: "Generative Art Director",
+    category: "Design",
+    categories: ["Design", "Marketing"],
+    bio: "Fictional demo creator producing generative beauty, lifestyle and product campaign visuals.",
+    skills: ["Generative art", "Art direction", "Product photography", "Retouching"],
+    projects: [{ name: "Tidal Botanics", detail: "Fictional skincare launch study combining studio direction with generative environments.", image: "/samples/skincare-campaign.jpg" }],
+    creative: {
+      specialization: "Generative beauty campaigns", tools: ["Midjourney", "Photoshop", "ComfyUI"], models: ["SDXL"],
+      contentTypes: ["Product image", "Social campaign"], formats: ["Image", "Carousel"], aspectRatio: "4:5",
+      platforms: ["Instagram", "Website"], workflow: "Moodboard, controlled generation, product compositing and retouching.",
+      workflowSteps: ["Moodboard", "Generate", "Composite", "Retouch"], humanContribution: "Art direction, selection, compositing and final retouch.", sourceAssets: "Fictional packshot and botanical references.",
+      toolEvidence: ["Demo node graph"], workflowEvidence: ["Demo layer breakdown"], pastWorkEvidence: [],
+      commercialUse: "Available", minimumBudget: 900, currency: "USD",
+    },
+    badge: "Sample · Generative art", color: "pink", featured: true, trending: true,
+    tags: ["Beauty", "Product", "Campaign"], availability: "Open to Opportunities", experienceLevel: "Advanced", publicPortfolio: true, source: "sample",
+  },
+  {
+    id: "demo-arjun-kale",
+    name: "Arjun Kale",
+    username: "arjunanimates",
+    identity: "AI Animator",
+    category: "Design",
+    categories: ["Design", "AI & Data"],
+    bio: "Fictional demo animator developing character-led explainers and hopeful future-world stories.",
+    skills: ["AI animation", "Storyboarding", "Character design", "Sound design"],
+    projects: [{ name: "Garden Unit", detail: "Fictional animated short concept about a small robot restoring a rooftop garden.", image: "/samples/robot-garden.jpg", video: "https://media.w3.org/2010/05/sintel/trailer.mp4" }],
+    creative: {
+      specialization: "AI-assisted character animation", tools: ["Blender", "Runway", "Premiere Pro"], models: ["Gen-3"],
+      contentTypes: ["Animation", "Explainer"], formats: ["Video", "Short film"], aspectRatio: "16:9",
+      platforms: ["YouTube", "Website"], workflow: "Storyboard, character and environment development, motion generation, edit and sound.",
+      workflowSteps: ["Script", "Storyboard", "Design", "Animate", "Sound"], humanContribution: "Story, visual development, animation direction, edit and sound design.", sourceAssets: "Original fictional character and environment concepts.",
+      toolEvidence: ["Demo scene setup"], workflowEvidence: ["Demo storyboard progression"], pastWorkEvidence: [],
+      commercialUse: "Available", minimumBudget: 1400, currency: "USD",
+    },
+    badge: "Sample · AI animation", color: "amber", featured: true, trending: false,
+    tags: ["Animation", "Character", "Story"], availability: "Available", experienceLevel: "Intermediate", publicPortfolio: true, source: "sample",
   },
 ];
 export const categories = [

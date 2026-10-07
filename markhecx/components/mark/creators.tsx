@@ -494,8 +494,7 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
         </>
       )}
       <p className="sample-footnote">
-        Discovery uses published profiles. Missing information is never treated
-        as verified evidence.
+        HECX indexes published profile and project evidence for search and campaign matching. Private drafts are excluded and do not retrain Gemini. Missing information is never treated as verified evidence.
       </p>
     </div>
   );

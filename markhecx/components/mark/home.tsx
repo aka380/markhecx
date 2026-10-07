@@ -159,7 +159,7 @@ export function HomePage() {
           ))}
         </div>
         <p className="sample-footnote">
-          Published creator profiles · Information is supplied by each creator.
+          Fictional samples are clearly labelled. Real published profiles use information supplied by each creator.
         </p>
       </section>
     </div>
