@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "cd markhecx && npm install",
-  "buildCommand": "cd markhecx && npm run build",
+  "installCommand": "npm --prefix markhecx ci",
+  "buildCommand": "npm --prefix markhecx run build",
   "outputDirectory": "markhecx/.next"
 }
