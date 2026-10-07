@@ -191,6 +191,11 @@ export class GeminiProvider implements AIProvider {
   async analyze(context: HecxContext, signal?: AbortSignal) {
     if (!context.authorized) throw new HecxError("unavailable");
     const baseline = analyzeLocal(context);
+    const casualConversation =
+      context.module === "AI Chat" &&
+      /^(hi|hello|hey|yo|good (morning|afternoon|evening)|thanks|thank you|thx)[!.?\s]*$/i.test(
+        context.message.trim(),
+      );
     // Existing domain analysis owns factual claims, missing data and permitted mutation targets.
     const evidence = {
       preferences: context.preferences,
@@ -219,6 +224,7 @@ export class GeminiProvider implements AIProvider {
       JSON.stringify({
         allowedEvidenceQuotes,
         task: context.module,
+        conversationIntent: casualConversation ? "casual" : "analysis",
         message: context.message,
         goal: context.goal,
         query: context.query,
@@ -231,8 +237,9 @@ export class GeminiProvider implements AIProvider {
           missingEvidence: baseline.requiresUserInput,
         },
         allowedChanges: baseline.suggestedChanges,
-        instruction:
-          "Answer the request with advice grounded in evidence. Evidence quotes must be copied exactly from allowedEvidenceQuotes. Use an empty array if none supports your answer. Select only existing allowedChanges IDs; never invent new changes. Do not restate unsupported user facts. Avoid numerical lists or invented numbers.",
+        instruction: casualConversation
+          ? "Respond naturally and briefly to the greeting or thanks. Do not produce a profile audit, mention missing fields, or force an analysis. Invite the user to ask about profiles, projects, campaigns, or creator comparisons. Use no evidence quotes or selected changes."
+          : "Answer the request with advice grounded in evidence. Evidence quotes must be copied exactly from allowedEvidenceQuotes. Use an empty array if none supports your answer. Select only existing allowedChanges IDs; never invent new changes. Do not restate unsupported user facts. Avoid numerical lists or invented numbers.",
       }),
       {
         ...analysisJSON,

@@ -27,7 +27,7 @@ function inferModule(c: HecxContext): HecxModule {
   if (/workload|deadline|capacity/.test(q)) return "Workload Analyzer";
   if (/career|direction/.test(q)) return "Career Insights";
   const previous = c.history.at(-1)?.module;
-  return previous && previous !== "AI Chat" ? previous : "Profile Analysis";
+  return previous && previous !== "AI Chat" ? previous : "AI Chat";
 }
 function result(module: HecxModule): HecxResult {
   return {
@@ -74,6 +74,18 @@ export function analyzeLocal(c: HecxContext): HecxResult {
     r.requiresUserInput = [
       "Sign in to the local workspace. No private profile data was included.",
     ];
+    return r;
+  }
+  if (analysisModule === "AI Chat") {
+    const message = c.message.trim();
+    const greeting = /^(hi|hello|hey|yo|good (morning|afternoon|evening))[!.?\s]*$/i.test(message);
+    const thanks = /^(thanks|thank you|thx)[!.?\s]*$/i.test(message);
+    r.summary = greeting
+      ? "Hey! I’m HECX. I can help improve your profile, review projects, compare creators for a campaign, or turn a rough brief into practical next steps. What are you working on?"
+      : thanks
+        ? "You’re welcome. Tell me what you want to work on next—your profile, a project, a campaign brief, or a creator comparison."
+        : "I can help with that, but I need a little more direction. Ask about your profile, portfolio, projects, skills, workload, campaign brief, or creator matches.";
+    r.confidence = "Limited data";
     return r;
   }
   if (c.goal) r.facts.push(`Your stated goal: ${c.goal}`);
