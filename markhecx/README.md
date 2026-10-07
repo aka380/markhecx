@@ -29,7 +29,7 @@ npm run build
 npm start -- --port 3001
 ```
 
-Open **http://127.0.0.1:3001**. The API health endpoint is **http://127.0.0.1:4000/api/health**. Use `127.0.0.1` consistently for local cookie/CORS behavior. Development: `npm run backend:dev` and `npm run dev -- --port 3000`.
+Open **http://127.0.0.1:3001**. This is the only browser-facing address; browser API requests use **http://127.0.0.1:3001/api/v1** and are forwarded internally to the private API service. Use `127.0.0.1` consistently for local cookie/CORS behavior. Development: `npm run backend:dev` and `npm run dev`.
 
 The database starts empty. Create a real Creator or Brand account with email and a password of at least 12 characters. There are no seeded credentials or automatic demo imports. Existing browser-only drafts are not automatically imported into an account. Clearly labeled sample showcases remain available under `/samples`; they are not real collaboration accounts.
 
