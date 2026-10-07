@@ -8,7 +8,7 @@
 4. Change the aspect ratio from 16:9 to 9:16. Show the score responding. Change required tools to an unavailable tool to demonstrate a mismatch. Clear the brief to show that no evidence yields no invented score.
 5. Open **Workflow & rights**, then **View portfolio**. Show tools/models, human contribution, source assets, project media and the self-declared evidence labels.
 6. Export the decision brief as JSON. It includes the exact requirements, selected creator metadata, scores, factor weights and questions to ask before hiring.
-7. Open the campaign builder. In browser demo mode choose Brand / Agency or Client / Individual, complete a brand profile, save a campaign, and inspect matching. Local brief extraction and suggestions work without an external provider; live AI requires the server configuration.
+7. Open the campaign builder. With production account services configured, choose Brand / Agency or Client / Individual, complete a brand profile, save a campaign, and inspect matching. For live brief generation, configure Gemini on the server. Local brief extraction is only available in explicitly enabled development demo mode.
 
 ## Data model
 
@@ -22,7 +22,7 @@
 
 ## Deployment and limits
 
-Vercel runs Next.js. The existing Express/MongoDB backend is selected with `MARKHECX_API_URL`. Browser demo storage is device-local, not secure multi-user account storage or cross-device sync. Google OAuth still requires authorized origins and server verification for real account access. Email, live Gemini, multi-user messages and persistent shared records require a reachable configured backend. The studio works independently of those services.
+Vercel runs Next.js and the existing Express API together at `/api/v1`. Production uses MongoDB-backed accounts and server-verified Google identities. Configure the variables in [PRODUCTION_SETUP.md](./PRODUCTION_SETUP.md), including a reachable Atlas database, Google OAuth origins, Gemini and verified email sending. The studio works independently of those services. Browser demo storage is only available in explicitly enabled development mode; production outages never create local accounts.
 
 ## Validation
 
