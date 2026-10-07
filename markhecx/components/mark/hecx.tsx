@@ -37,7 +37,7 @@ const quickLabels: Record<string, string> = {
   "Workload Analyzer": "Workload Analyzer",
 };
 export function HecxPage() {
-  const { state, ready } = useApp();
+  const { state, ready, localMode } = useApp();
   const params = useSearchParams();
   return (
     <>
@@ -46,7 +46,9 @@ export function HecxPage() {
         title="Your intelligence layer for MarkHECX."
         description="Understand your data. Review the reasoning. Decide what changes."
       >
-        <Badge tone="purple">HECX · Secure backend analysis</Badge>
+        <Badge tone="purple">
+          {localMode ? "HECX · Browser demo analysis" : "HECX · Secure backend analysis"}
+        </Badge>
       </PageTitle>
       {state.signedIn && state.accountType === "Brand" && (
         <Card className="panel section-copy">
@@ -71,6 +73,7 @@ export function HecxPage() {
         />
       ) : (
         <HecxWorkspace
+          localMode={localMode}
           key={JSON.stringify([
             params.get("module"),
             params.get("project"),
@@ -82,7 +85,7 @@ export function HecxPage() {
     </>
   );
 }
-function HecxWorkspace() {
+function HecxWorkspace({ localMode }: { localMode: boolean }) {
   const { state } = useApp();
   const params = useSearchParams();
   const initial = params.get("module") || "AI Chat";
@@ -254,9 +257,9 @@ function HecxWorkspace() {
             project records · {state.profile.achievements.length} achievements.
           </p>
           <p>
-            Analysis uses the server-selected AI provider. Relevant supplied
-            context may be sent to Gemini. Results identify the provider and
-            require your review.
+            {localMode
+              ? "Demo analysis runs locally from the information you supplied. Results require your review."
+              : "Analysis uses the server-selected AI provider. Relevant supplied context may be sent to Gemini. Results identify the provider and require your review."}
           </p>
         </div>
         {!!recent.length && (
@@ -289,7 +292,9 @@ function HecxWorkspace() {
               ? "Gemini · Live"
               : result
                 ? "Deterministic fallback"
-                : "Provider selected securely on server"}
+                : localMode
+                  ? "Local demo provider"
+                  : "Provider selected securely on server"}
           </Badge>
           <div className="mobile-mode">
             <Button variant="ghost" onClick={reset}>

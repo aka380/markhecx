@@ -503,9 +503,20 @@ export const localMarketplaceProvider: MarketplaceDataProvider = {
   read() {
     try {
       const raw = localStorage.getItem("markhecx.marketplace.v1");
-      return raw
-        ? marketplaceSchema.parse(JSON.parse(raw))
-        : initialMarketplace();
+      if (!raw) return initialMarketplace();
+      const stored = marketplaceSchema.parse(JSON.parse(raw));
+      const samples = initialMarketplace();
+      const merge = <T extends { id: string }>(saved: T[], demo: T[]) => [
+        ...saved,
+        ...demo.filter((item) => !saved.some((existing) => existing.id === item.id)),
+      ];
+      return {
+        ...stored,
+        brands: merge(stored.brands, samples.brands),
+        campaigns: merge(stored.campaigns, samples.campaigns),
+        applications: merge(stored.applications, samples.applications),
+        invitations: merge(stored.invitations, samples.invitations),
+      };
     } catch {
       return initialMarketplace();
     }

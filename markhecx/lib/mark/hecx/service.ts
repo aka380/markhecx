@@ -1,4 +1,4 @@
-import { api } from "../api/client";
+import { api, APIError } from "../api/client";
 import { z } from "zod";
 import type { AppState } from "../store";
 import { buildHECXContext } from "./context";
@@ -150,18 +150,30 @@ export function createHECXService(
 }
 const localService = createHECXService();
 export const hecxService: ReturnType<typeof createHECXService> = {
-  analyze(state, options, signal) {
-    return typeof window === "undefined"
-      ? localService.analyze(state, options, signal)
-      : api("/hecx/analyze", { method: "POST", body: options, signal });
+  async analyze(state, options, signal) {
+    if (typeof window === "undefined")
+      return localService.analyze(state, options, signal);
+    try {
+      return await api("/hecx/analyze", { method: "POST", body: options, signal });
+    } catch (error) {
+      if (error instanceof APIError && [0, 503].includes(error.status))
+        return localService.analyze(state, options, signal);
+      throw error;
+    }
   },
-  suggest(action, source, signal) {
-    return typeof window === "undefined"
-      ? localService.suggest(action, source, signal)
-      : api("/hecx/field", {
-          method: "POST",
-          body: { action, source },
-          signal,
-        });
+  async suggest(action, source, signal) {
+    if (typeof window === "undefined")
+      return localService.suggest(action, source, signal);
+    try {
+      return await api("/hecx/field", {
+        method: "POST",
+        body: { action, source },
+        signal,
+      });
+    } catch (error) {
+      if (error instanceof APIError && [0, 503].includes(error.status))
+        return localService.suggest(action, source, signal);
+      throw error;
+    }
   },
 };

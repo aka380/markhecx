@@ -13,6 +13,7 @@ import { MarketplaceState, Actor } from "@/lib/mark/marketplace/models";
 import { api, APIError, dataChanged } from "@/lib/mark/api/client";
 import { emptyMarketplace, persistMarket } from "@/lib/mark/api/marketplace";
 import { initialMarketplace } from "@/lib/mark/marketplace/fixtures";
+import { localMarketplaceProvider } from "@/lib/mark/marketplace/services";
 import { useApp } from "../provider";
 import { Button } from "../ui";
 const Context = createContext<{
@@ -27,7 +28,7 @@ export function MarketplaceProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { state, user, ready: accountReady } = useApp();
+  const { state, user, localMode, ready: accountReady } = useApp();
   const [data, setData] = useState(emptyMarketplace),
     [ready, setReady] = useState(false),
     [error, setError] = useState(""),
@@ -47,7 +48,15 @@ export function MarketplaceProvider({
       setReady(false);
       setError("");
     });
-    if (accountReady)
+    if (accountReady && localMode) {
+      queueMicrotask(() => {
+        if (current !== generation.current) return;
+        const fallback = localMarketplaceProvider.read();
+        live.current = fallback;
+        setData(fallback);
+        setReady(true);
+      });
+    } else if (accountReady)
       api<MarketplaceState>(
         state.signedIn ? "/marketplace" : "/marketplace/public",
         { signal: controller.signal },
@@ -80,13 +89,21 @@ export function MarketplaceProvider({
       controller.abort();
       invalidate();
     };
-  }, [accountReady, state.signedIn, user?.id, retry]);
+  }, [accountReady, state.signedIn, user?.id, retry, localMode]);
   const change = useCallback(
     (fn: (s: MarketplaceState) => MarketplaceState): Promise<boolean> => {
       const current = generation.current;
       const task = queue.current.then(async () => {
         if (current !== generation.current) return false;
         try {
+          if (localMode) {
+            const result = fn(live.current);
+            localMarketplaceProvider.write(result);
+            live.current = result;
+            setData(result);
+            dataChanged();
+            return true;
+          }
           const result = await persistMarket(live.current, fn(live.current));
           if (current !== generation.current) return false;
           live.current = result;
@@ -101,13 +118,19 @@ export function MarketplaceProvider({
       queue.current = task;
       return task;
     },
-    [],
+    [localMode],
   );
   const refresh = useCallback((): Promise<void> => {
     const current = generation.current;
     const task = queue.current.then(async () => {
       if (current !== generation.current) return;
       try {
+        if (localMode) {
+          const result = localMarketplaceProvider.read();
+          live.current = result;
+          setData(result);
+          return;
+        }
         const result = await api<MarketplaceState>("/marketplace");
         if (current !== generation.current) return;
         live.current = result;
@@ -118,7 +141,7 @@ export function MarketplaceProvider({
     });
     queue.current = task;
     return task;
-  }, []);
+  }, [localMode]);
   const actor = useMemo<Actor>(
     () => ({
       signedIn: state.signedIn,

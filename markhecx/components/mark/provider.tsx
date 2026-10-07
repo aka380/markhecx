@@ -17,7 +17,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { AppState, emptyState } from "@/lib/mark/store";
+import { AppState, emptyState, localRepository } from "@/lib/mark/store";
+import { toggleSaved } from "@/lib/mark/marketplace/services";
 import {
   api,
   APIError,
@@ -32,6 +33,7 @@ type Context = {
   ready: boolean;
   authError: string;
   user: SessionUser | null;
+  localMode: boolean;
   update: (fn: (s: AppState) => AppState) => Promise<boolean>;
   openAuth: (mode?: string) => void;
   logout: () => Promise<void>;
@@ -50,7 +52,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(emptyState),
     [ready, setReady] = useState(false),
     [user, setUser] = useState<SessionUser | null>(null),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [localMode, setLocalMode] = useState(false);
   const live = useRef(emptyState),
     revision = useRef(0),
     generation = useRef(0),
@@ -103,6 +106,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         dataChanged();
       } catch (e) {
         if (current !== generation.current) return;
+        if (e instanceof APIError && [0, 503].includes(e.status)) {
+          const local = localRepository.read();
+          setLocalMode(true);
+          assign(local);
+          setUser(
+            local.signedIn
+              ? {
+                  id: local.accountType === "Brand" ? "local-brand" : "local",
+                  name: local.profile.name || local.accountType,
+                  email: "local@markhecx.demo",
+                  role: local.accountType,
+                }
+              : null,
+          );
+          setError("");
+          setReady(true);
+          return;
+        }
         clear();
         setReady(true);
         if (
@@ -141,8 +162,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener("markhecx:expired", expired);
     };
   }, [load, clear]);
+  useEffect(() => {
+    if (!localMode || !ready) return;
+    try {
+      localRepository.write(state);
+    } catch {
+      toast.error("Browser storage is unavailable. Changes will last only for this session.");
+    }
+  }, [state, localMode, ready]);
   const update = useCallback(
     (fn: (s: AppState) => AppState): Promise<boolean> => {
+      if (localMode) {
+        try {
+          const next = fn(live.current);
+          assign(next);
+          return Promise.resolve(true);
+        } catch (e) {
+          toast.error((e as Error).message);
+          return Promise.resolve(false);
+        }
+      }
       const current = generation.current;
       if (!live.current.signedIn) return Promise.resolve(false);
       let next: AppState;
@@ -196,13 +235,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       queue.current = task;
       return task;
     },
-    [assign],
+    [assign, localMode],
   );
   const openAuth = useCallback((mode = "Sign In") => {
     setAuth(mode);
     setPassword("");
   }, []);
   const logout = async () => {
+    if (localMode) {
+      const next = { ...live.current, signedIn: false };
+      assign(next);
+      setUser(null);
+      toast.success("Signed out of this browser workspace.");
+      router.push("/");
+      return;
+    }
     try {
       await api("/auth/logout", { method: "POST" });
       clear();
@@ -214,6 +261,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
   const toggleSave = async (id: string) => {
     if (!live.current.signedIn) return openAuth();
+    if (localMode) {
+      assign({
+        ...live.current,
+        [live.current.accountType === "Brand" ? "brandSaved" : "saved"]:
+          toggleSaved(
+            live.current.accountType === "Brand"
+              ? live.current.brandSaved
+              : live.current.saved,
+            id,
+          ),
+      });
+      return;
+    }
     const current = generation.current;
     try {
       await api("/marketplace/commands", {
@@ -241,6 +301,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ready,
         authError: error,
         user,
+        localMode,
         update,
         openAuth,
         logout,
@@ -262,16 +323,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       >
         <DialogContent className="mark-dialog">
           <Brand />
-          <Badge tone="purple">Your MarkHECX account</Badge>
+          <Badge tone="purple">
+            {localMode ? "Browser demo workspace" : "Your MarkHECX account"}
+          </Badge>
           <DialogTitle>
             {auth === "Sign Up"
               ? "Make room for your next chapter."
               : "Welcome to your creative space."}
           </DialogTitle>
           <DialogDescription>
-            Sign in to access your saved workspace across devices.
+            {localMode
+              ? "The hosted demo stores changes safely in this browser."
+              : "Sign in to access your saved workspace across devices."}
           </DialogDescription>
-          {auth && auth !== "Reset" && (
+          {!localMode && auth && auth !== "Reset" && (
             <GoogleSignIn
               role={role}
               onSession={async (session) => {
@@ -283,7 +348,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               }}
             />
           )}
-          {auth === "Reset" ? (
+          {!localMode && auth === "Reset" ? (
             <PasswordReset onBack={() => setAuth("Sign In")} />
           ) : (
             <form
@@ -293,6 +358,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 if (busy) return;
                 setBusy(true);
                 try {
+                  if (localMode) {
+                    const next = {
+                      ...live.current,
+                      signedIn: true,
+                      accountType: role,
+                      profile:
+                        role === "Creator"
+                          ? {
+                              ...live.current.profile,
+                              name: name.trim() || "Demo Creator",
+                            }
+                          : live.current.profile,
+                    };
+                    assign(next);
+                    setUser({
+                      id: role === "Brand" ? "local-brand" : "local",
+                      name: name.trim() || role,
+                      email: "local@markhecx.demo",
+                      role,
+                    });
+                    setAuth("");
+                    router.push(role === "Brand" ? "/brand" : "/profile");
+                    toast.success("Your browser workspace is ready.");
+                    return;
+                  }
                   const session = await api<{
                     user: SessionUser;
                     csrfToken: string;
@@ -315,7 +405,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 }
               }}
             >
-              {auth === "Sign Up" && (
+              {(localMode || auth === "Sign Up") && (
                 <>
                   <label className="field">
                     Account type
@@ -338,7 +428,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   </label>
                 </>
               )}
-              <label className="field">
+              {!localMode && <label className="field">
                 Email
                 <Input
                   type="email"
@@ -347,8 +437,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
-              </label>
-              <label className="field">
+              </label>}
+              {!localMode && <label className="field">
                 Password
                 <Input
                   type="password"
@@ -361,12 +451,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-              </label>
-              <p className="small-note">Use at least 12 characters.</p>
+              </label>}
+              {!localMode && <p className="small-note">Use at least 12 characters.</p>}
               <Button className="btn-primary" type="submit" disabled={busy}>
-                {busy ? "Connecting…" : auth}
+                {busy ? "Connecting…" : localMode ? "Continue" : auth}
               </Button>
-              <Button
+              {!localMode && <Button
                 type="button"
                 onClick={() =>
                   setAuth(auth === "Sign Up" ? "Sign In" : "Sign Up")
@@ -375,8 +465,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 {auth === "Sign Up"
                   ? "Already have an account? Sign In"
                   : "Create an account"}
-              </Button>
-              {auth === "Sign In" && (
+              </Button>}
+              {!localMode && auth === "Sign In" && (
                 <Button
                   type="button"
                   disabled={busy}
