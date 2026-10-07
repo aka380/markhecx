@@ -24,7 +24,7 @@ test("6A database, health, origin boundaries, malformed JSON and safe errors", a
     assert.equal(
       (
         await fetch(base + "/api/health", {
-          headers: { origin: "http://127.0.0.1:5173" },
+          headers: { origin: "http://127.0.0.1:3001" },
         })
       ).status,
       200,

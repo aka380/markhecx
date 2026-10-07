@@ -35,8 +35,7 @@ export async function api<T>(
   const signal = options.signal
     ? AbortSignal.any([options.signal, timeout])
     : timeout;
-  const base =
-    process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+  const base = "/api/v1";
   let response: Response;
   try {
     response = await fetch(base + path, {

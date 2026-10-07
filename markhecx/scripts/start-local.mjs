@@ -57,22 +57,13 @@ try {
       code === 0 ? resolve() : reject(Error("Database initialization failed.")),
     ),
   );
-  if (!(await listening(4000)))
-    run(process.execPath, [
-      "--env-file-if-exists=server/.env",
-      "server/dist/index.mjs",
-    ]);
+  if (!(await listening(3001))) run("npm", ["run", "dev"]);
   await wait(async () => {
     try {
-      const r = await fetch("http://127.0.0.1:4000/api/health");
+      const r = await fetch("http://127.0.0.1:3001/api/v1/health");
       return r.ok && (await r.json()).database === "connected";
-    } catch {
-      return false;
-    }
+    } catch { return false; }
   });
-  if (!(await listening(3001)))
-    run("npm", ["run", "start", "--", "--port", "3001"]);
-  await wait(() => listening(3001));
   console.log(
     "MarkHECX ready at http://127.0.0.1:3001. Keep this launcher open. Existing services/data are reused.",
   );

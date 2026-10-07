@@ -19,7 +19,7 @@ import {
 } from "@/lib/mark/marketplace/services";
 import { useDiscoveryCreators } from "../discovery/use-discovery";
 export function MessagesPage() {
-  const params = useSearchParams();
+  const params = (useSearchParams() ?? new URLSearchParams());
   return (
     <Access>
       <Messages

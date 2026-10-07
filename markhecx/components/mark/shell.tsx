@@ -88,9 +88,9 @@ export function menuHref(group: string, item: string) {
 }
 export function Shell({ children }: { children: React.ReactNode }) {
   const { state, ready, authError, openAuth, logout } = useApp();
-  const path = usePathname();
+  const path = (usePathname() ?? "/");
   const router = useRouter();
-  const params = useSearchParams();
+  const params = (useSearchParams() ?? new URLSearchParams());
   if (!ready)
     return (
       <div role="status" className="info-line">

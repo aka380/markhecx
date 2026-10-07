@@ -2848,3 +2848,18 @@ video {
     transform: none;
   }
 }
+
+.google-sign-in { width: 100%; min-width: 0; }
+.google-sign-in-button { max-width: 400px; min-height: 40px; border-radius: 24px; overflow: hidden; isolation: isolate; }
+.google-sign-in-button iframe { max-width: none; color-scheme: normal; }
+.auth-service-notice { display: grid; gap: 14px; padding: 20px; border: 1px solid #39303f; border-radius: 16px; background: #201b26; }
+.auth-service-notice a { color: #c6a7ff; text-decoration: underline; }
+.account-options { min-width: 0; border: 0; padding: 0; margin: 0; }
+.account-options legend { font-weight: 650; margin-bottom: 6px; }
+.account-options-grid { display: grid; gap: 8px; margin-top: 12px; }
+.account-option { display: flex; align-items: center; gap: 12px; border: 1px solid #393940; border-radius: 12px; padding: 12px 14px; cursor: pointer; background: #16161b; }
+.account-option[data-selected="true"] { border-color: #ed268c; background: #251522; }
+.account-option input { accent-color: #ed268c; flex-shrink: 0; width: 18px; height: 18px; }
+.account-option strong, .account-option small { display: block; }
+.account-option small { color: #aaaab6; margin-top: 3px; line-height: 1.4; }
+.account-option:focus-within { outline: 2px solid #b79bff; outline-offset: 2px; }

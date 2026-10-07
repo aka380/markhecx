@@ -37,8 +37,10 @@ import type { Creator } from "@/lib/mark/data";
 import { useDiscoveryResource } from "./discovery/use-discovery";
 import { PublicCreatorProfile } from "./phase2/public-creator";
 
+const EMPTY_SEARCH_PARAMS = new URLSearchParams();
+
 export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
-  const params = useSearchParams(),
+  const params = useSearchParams() ?? EMPTY_SEARCH_PARAMS,
     router = useRouter();
   const { state, ready } = useApp();
   const discovery = useDiscoveryResource(

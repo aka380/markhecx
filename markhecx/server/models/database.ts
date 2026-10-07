@@ -2,7 +2,10 @@ import { MongoClient } from "mongodb";
 import { config } from "../config/env";
 export const client = new MongoClient(config.MONGODB_URI, {
   serverSelectionTimeoutMS: 5000,
-  maxPoolSize: 20,
+  maxPoolSize: 10,
+  minPoolSize: 0,
+  maxIdleTimeMS: 60000,
+  waitQueueTimeoutMS: 5000,
 });
 export const db = client.db(config.MONGODB_DATABASE);
 export async function connectDatabase() {

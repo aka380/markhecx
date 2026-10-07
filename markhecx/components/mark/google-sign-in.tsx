@@ -38,7 +38,6 @@ export function GoogleSignIn({
   role,
   onSession,
   link = false,
-  localMode = false,
 }: {
   role: "Creator" | "Brand";
   onSession: (session: {
@@ -46,7 +45,6 @@ export function GoogleSignIn({
     csrfToken: string;
   }) => Promise<void>;
   link?: boolean;
-  localMode?: boolean;
 }) {
   const element = useRef<HTMLDivElement>(null),
     callback = useRef(onSession);
@@ -56,28 +54,20 @@ export function GoogleSignIn({
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [attempt, retry] = useState(0);
-  const clientId =
-    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
-    "665821156538-a5fla25a4sskchom3qev6p4mmgp0k0lh.apps.googleusercontent.com";
   useEffect(() => {
-    if (!clientId) return;
+    const host = element.current;
     let active = true;
+    let observer: ResizeObserver | undefined;
+    let refresh: ReturnType<typeof setTimeout> | undefined;
     async function setup() {
       try {
+        const challenge = await api<{ nonce: string; clientId: string }>(
+          "/auth/google/challenge", { method: "POST", quiet: true },
+        );
         await loadGoogle();
-        const challenge = localMode
-          ? { nonce: "", clientId }
-          : await api<{ nonce: string; clientId: string }>(
-              "/auth/google/challenge",
-              { method: "POST", quiet: true },
-            );
         if (!active || !element.current) return;
-        if (challenge.clientId !== clientId)
-          throw Error(
-            "Google Sign-In configuration does not match the server.",
-          );
         window.google!.accounts.id.initialize({
-          client_id: clientId,
+          client_id: challenge.clientId,
           nonce: challenge.nonce,
           auto_select: false,
           callback: async (response: { credential?: string }) => {
@@ -85,34 +75,6 @@ export function GoogleSignIn({
             setBusy(true);
             setError("");
             try {
-              if (localMode) {
-                const payload = JSON.parse(
-                  decodeURIComponent(
-                    atob(response.credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
-                      .split("")
-                      .map((character) =>
-                        "%" + character.charCodeAt(0).toString(16).padStart(2, "0"),
-                      )
-                      .join(""),
-                  ),
-                ) as { sub?: string; name?: string; email?: string; iss?: string };
-                if (
-                  !payload.sub ||
-                  !payload.email ||
-                  !["accounts.google.com", "https://accounts.google.com"].includes(payload.iss || "")
-                )
-                  throw Error("Google did not return a valid identity.");
-                await callback.current({
-                  user: {
-                    id: `google-${payload.sub}`,
-                    name: payload.name || payload.email.split("@")[0],
-                    email: payload.email,
-                    role,
-                  },
-                  csrfToken: "local-demo",
-                });
-                return;
-              }
               const session = await api<{
                 user: SessionUser;
                 csrfToken: string;
@@ -133,16 +95,22 @@ export function GoogleSignIn({
             }
           },
         });
-        window.google!.accounts.id.renderButton(element.current, {
-          theme: "filled_black",
-          size: "large",
-          text: link ? "continue_with" : "signin_with",
-          shape: "pill",
-          width: Math.max(
-            200,
-            Math.min(400, Math.floor(element.current.getBoundingClientRect().width)),
-          ),
-        });
+        let lastWidth = 0;
+        const render = () => {
+          if (!active || !element.current) return;
+          const width = Math.min(400, Math.floor(element.current.getBoundingClientRect().width));
+          if (!width || width === lastWidth) return;
+          lastWidth = width;
+          element.current.replaceChildren();
+          window.google!.accounts.id.renderButton(element.current, {
+            theme: "filled_black", size: "large",
+            text: link ? "continue_with" : "signin_with", shape: "pill", width,
+          });
+        };
+        render();
+        observer = new ResizeObserver(render);
+        observer.observe(element.current);
+        refresh = setTimeout(() => { if (active) retry(n => n + 1); }, 240000);
       } catch (e) {
         if (active) setError((e as Error).message);
       }
@@ -150,16 +118,16 @@ export function GoogleSignIn({
     void setup();
     return () => {
       active = false;
+      observer?.disconnect();
+      if (refresh) clearTimeout(refresh);
+      host?.replaceChildren();
       window.google?.accounts.id.cancel();
     };
-  }, [clientId, role, link, localMode, attempt]);
-  if (!clientId)
-    return (
-      <p className="small-note">Google Sign-In is currently unavailable.</p>
-    );
+  }, [role, link, attempt]);
   return (
-    <div style={{ width: "100%", overflow: "hidden" }}>
+    <div className="google-sign-in" aria-busy={busy}>
       <div
+        className="google-sign-in-button"
         ref={element}
         style={{
           width: "100%",

@@ -7,12 +7,12 @@ import { ProjectEditor } from "./phase2/project-editor";
 import { useApp, SignInGate } from "./provider";
 import { PageTitle, Card, Badge, Button, Input, Textarea, Action } from "./ui";
 export function CreatePage() {
-  const params = useSearchParams();
+  const params = (useSearchParams() ?? new URLSearchParams());
   return <CreateContent key={params.get("type") || ""} />;
 }
 function CreateContent() {
   const { state, update, log } = useApp();
-  const p = useSearchParams();
+  const p = (useSearchParams() ?? new URLSearchParams());
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [detail, setDetail] = useState("");

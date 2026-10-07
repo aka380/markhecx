@@ -57,7 +57,7 @@ test("6G frontend command adapter persists a real brand-to-creator collaboration
     // A real HTTP client with two cookie jars, no browser automation or mocked API responses.
     let active = brand;
     globalThis.fetch = (input, init) =>
-      nativeFetch(input, {
+      nativeFetch(typeof input === "string" && input.startsWith("/api/v1") ? t.base + input.slice("/api/v1".length) : input, {
         ...init,
         headers: {
           ...active.headers,

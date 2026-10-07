@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { GoogleSignIn } from "./google-sign-in";
 import { PasswordReset } from "./password-reset";
 import {
@@ -27,7 +28,7 @@ import {
   dataChanged,
 } from "@/lib/mark/api/client";
 import { useRouter } from "next/navigation";
-import { Button, Input, Brand, Badge, Choice } from "./ui";
+import { Button, Input, Brand, Badge } from "./ui";
 type Context = {
   state: AppState;
   ready: boolean;
@@ -91,6 +92,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             quiet: true,
           }));
         if (current !== generation.current) return;
+        setLocalMode(false);
         setCSRF(s.csrfToken, s.user.id);
         const [w, saved] = await Promise.all([
           api<Workspace>("/workspace"),
@@ -109,7 +111,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         dataChanged();
       } catch (e) {
         if (current !== generation.current) return;
-        if (e instanceof APIError && [0, 503].includes(e.status)) {
+        if (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_ENABLE_DEMO === "true" && e instanceof APIError && [0, 503].includes(e.status)) {
           const local = localRepository.read();
           setLocalMode(true);
           assign(local);
@@ -132,12 +134,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (
           !(
             e instanceof APIError &&
-            [0, 401, 503].includes(e.status)
+            e.status === 401
           )
         )
           setError(
             e instanceof Error ? e.message : "Could not load your account.",
           );
+        if (session) throw e;
       } finally {
         if (current === generation.current) setReady(true);
       }
@@ -336,33 +339,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           </DialogTitle>
           <DialogDescription>
             {localMode
-              ? "The hosted demo stores changes safely in this browser."
+              ? "Development workspace. Changes stay on this device."
               : "Sign in to access your saved workspace across devices."}
           </DialogDescription>
-          {auth && auth !== "Reset" && (
+          {auth && auth !== "Reset" && !error && (
+            <fieldset className="account-options">
+              <legend>{auth === "Sign Up" || localMode ? "Choose your account" : "Joining for the first time?"}</legend>
+              <p className="small-note">Existing accounts keep their current role.</p>
+              <div className="account-options-grid">
+                {([
+                  ["Creator", "Showcase your work and apply for briefs."],
+                  ["Brand / Agency", "Find talent and manage campaigns."],
+                  ["Client / Individual", "Hire a creator for a personal project."],
+                ] as const).map(([value, description]) => (
+                  <label className="account-option" key={value} data-selected={role === value}>
+                    <input type="radio" name="account-choice" value={value} checked={role === value} onChange={() => setRole(value)} />
+                    <span><strong>{value}</strong><small>{description}</small></span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )}
+          {auth && auth !== "Reset" && !localMode && !error && (
             <GoogleSignIn
               role={accountRole(role)}
-              localMode={localMode}
               onSession={async (session) => {
-                if (localMode) {
-                  const next = {
-                    ...live.current,
-                    signedIn: true,
-                    accountType: session.user.role,
-                    profile:
-                      session.user.role === "Creator"
-                        ? { ...live.current.profile, name: session.user.name }
-                        : live.current.profile,
-                  };
-                  assign(next);
-                  setUser(session.user);
-                  setAuth("");
-                  router.push(
-                    session.user.role === "Brand" ? "/brand" : "/profile",
-                  );
-                  toast.success(`Signed in with Google as ${session.user.name}.`);
-                  return;
-                }
                 await load(session);
                 setAuth("");
                 router.push(
@@ -371,7 +372,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               }}
             />
           )}
-          {!localMode && auth === "Reset" ? (
+          {error ? (
+            <div className="auth-service-notice" role="status">
+              <h3>Accounts are temporarily unavailable</h3>
+              <p>Your account cannot be accessed until the connection is restored. You can still explore creator portfolios and Match Studio.</p>
+              <Button onClick={() => void load()}>Retry connection</Button>
+              <Link href="/studio" onClick={() => setAuth("")}>Explore Match Studio</Link>
+            </div>
+          ) : !localMode && auth === "Reset" ? (
             <PasswordReset onBack={() => setAuth("Sign In")} />
           ) : (
             <form
@@ -431,15 +439,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             >
               {(localMode || auth === "Sign Up") && (
                 <>
-                  <label className="field">
-                    Account type
-                    <Choice
-                      label="Account type"
-                      value={role}
-                      options={["Creator", "Brand / Agency", "Client / Individual"]}
-                      onChange={(v) => setRole(v as AccountChoice)}
-                    />
-                  </label>
                   <label className="field">
                     Your display name
                     <Input

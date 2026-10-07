@@ -1,3 +1,4 @@
+import { rateLimitIndexes } from "./middleware/rate-store";
 import { memoryIndexes } from "./models/memory";
 import { notificationIndexes } from "./models/notifications";
 import { marketIndexes } from "./models/marketplace";
@@ -8,6 +9,7 @@ import { connectDatabase, client } from "./models/database";
 import { config } from "./config/env";
 await connectDatabase();
 await authIndexes();
+await rateLimitIndexes();
 await memoryIndexes();
 await creatorIndexes();
 await marketIndexes();

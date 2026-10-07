@@ -38,7 +38,7 @@ const quickLabels: Record<string, string> = {
 };
 export function HecxPage() {
   const { state, ready, localMode } = useApp();
-  const params = useSearchParams();
+  const params = (useSearchParams() ?? new URLSearchParams());
   return (
     <>
       <PageTitle
@@ -87,7 +87,7 @@ export function HecxPage() {
 }
 function HecxWorkspace({ localMode }: { localMode: boolean }) {
   const { state } = useApp();
-  const params = useSearchParams();
+  const params = (useSearchParams() ?? new URLSearchParams());
   const initial = params.get("module") || "AI Chat";
   const [mode, setMode] = useState<HecxModule>(
       hecxModules.includes(initial as HecxModule)

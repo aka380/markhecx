@@ -1,3 +1,4 @@
+import { productionRateStore } from "../middleware/rate-store";
 import {
   googleChallenge,
   googleSignIn,
@@ -26,6 +27,7 @@ const registration = credentials.extend({
   role: z.enum(["Creator", "Brand"]),
 });
 const limiter = rateLimit({
+  store: productionRateStore("auth"),
   windowMs: 15 * 60000,
   limit: 20,
   standardHeaders: "draft-8",
@@ -66,6 +68,7 @@ authRoutes.post("/logout", authenticate, async (_req, res) => {
 });
 
 const resetLimiter = rateLimit({
+  store: productionRateStore("reset"),
   windowMs: 15 * 60000,
   limit: 30,
   standardHeaders: "draft-8",

@@ -1,4 +1,5 @@
 import express from "express";
+import { productionRateStore } from "./middleware/rate-store";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 import { requestLog, corsAndOrigin } from "./middleware/security";
@@ -7,12 +8,15 @@ import { api } from "./routes";
 export function createApp() {
   const app = express();
   app.disable("x-powered-by");
+  // Vercel supplies the trusted client IP on the direct request.
+  if (process.env.VERCEL) app.set("trust proxy", 1);
   app.use(
     helmet(),
     requestLog,
     corsAndOrigin,
     rateLimit({
       windowMs: 60000,
+      store: productionRateStore("api"),
       limit: 300,
       standardHeaders: "draft-8",
       legacyHeaders: false,

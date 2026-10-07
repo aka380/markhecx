@@ -26,7 +26,7 @@ export function PublicCreatorProfile({
   sampleMode?: boolean;
 }) {
   const { state, ready, toggleSave } = useApp();
-  const params = useSearchParams();
+  const params = (useSearchParams() ?? new URLSearchParams());
   const back = safeDiscoveryReturn(params.get("from"));
   const sample =
     sampleMode || params.get("sample") === "1"
