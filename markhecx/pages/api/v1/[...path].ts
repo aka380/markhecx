@@ -8,7 +8,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   res.setHeader('Cache-Control', 'no-store');
   const readiness = productionConfiguration(process.env);
   if (!readiness.ready) {
-    res.status(503).json({ error: { code: 'service_configuration', message: 'Account services are not configured yet. Please try again later.' } });
+    res.status(503).json({
+      error: { code: 'service_configuration', message: 'Account services are not configured yet. Please try again later.' },
+      ...(req.url?.split('?')[0] === '/api/v1/health' ? { status: 'unavailable', configuration: { missingOrInvalid: readiness.missing } } : {}),
+    });
     return;
   }
   try {
@@ -20,7 +23,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.once('error', reject);
       app(req, res);
     });
-  } catch {
+  } catch (error) {
+    const category = error && typeof error === 'object' && 'name' in error
+      && ['MongoServerSelectionError', 'MongoServerError', 'MongoParseError', 'ZodError'].includes(String(error.name))
+      ? String(error.name) : 'InitializationError';
+    console.error(JSON.stringify({ event: 'api_initialization_failed', category }));
     // No credentials, connection strings, or raw database errors in responses/logs.
     if (!res.headersSent) res.status(503).json({ error: { code: 'service_unavailable', message: 'Account services are temporarily unavailable. Please try again shortly.' } });
     else res.end();
