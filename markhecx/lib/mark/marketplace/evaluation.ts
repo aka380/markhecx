@@ -25,7 +25,7 @@ export function evaluateSampleMatching() {
     };
     const ranking = creators
       .filter((creator) => creator.source === "sample")
-      .map((creator) => ({ creatorId: creator.id, ...scoreCreator(campaign, creator) }))
+      .map((creator) => scoreCreator(campaign, creator))
       .sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
     return {
       caseId: testCase.id,

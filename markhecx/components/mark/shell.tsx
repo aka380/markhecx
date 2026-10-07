@@ -267,7 +267,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <DropdownMenu key={group}>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className={`nav-item ${group === "Premium" ? "premium-nav" : ""} ${(group === "More" ? ["/about", "/samples", "/guidelines", "/help", "/activity", "/resources", "/settings"].includes(path) : group === "Create" ? path === "/create" || path.startsWith("/portfolio") || path.startsWith("/projects") : path.startsWith("/" + group.toLowerCase())) ? "active" : ""}`}
+                    className={`nav-item ${(group === "More" ? ["/about", "/samples", "/guidelines", "/help", "/activity", "/resources", "/settings"].includes(path) : group === "Create" ? path === "/create" || path.startsWith("/portfolio") || path.startsWith("/projects") : path.startsWith("/" + group.toLowerCase())) ? "active" : ""}`}
                   >
                     <Icon />
                     <span>{group}</span>

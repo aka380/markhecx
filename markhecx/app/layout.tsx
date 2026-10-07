@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import "./phase2.css";
 import "./phase3.css";
@@ -33,7 +34,15 @@ export default function RootLayout({
         <AppProvider>
           <MarketplaceProvider>
             <WebMcp />
-            <Shell>{children}</Shell>
+            <Suspense
+              fallback={
+                <div role="status" className="info-line">
+                  Loading MarkHECX…
+                </div>
+              }
+            >
+              <Shell>{children}</Shell>
+            </Suspense>
           </MarketplaceProvider>
         </AppProvider>
       </body>
