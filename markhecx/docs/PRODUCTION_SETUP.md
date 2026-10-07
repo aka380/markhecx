@@ -1,6 +1,6 @@
 # Production setup on Vercel
 
-The frontend and Express API now deploy together through Next.js. `/api/v1/*` uses the existing controllers, authorization, validation, database models and secure cookies. No separate Express host or laptop connection is required. The old `MARKHECX_API_URL` gateway setting is no longer used.
+The frontend and Express API now deploy together through Next.js. `/api/v1/*` uses the existing controllers, authorization, validation, database models and secure cookies. No separate Express host or laptop connection is required. The old `MARKHECX_API_URL` gateway setting is no longer used. When omitted, the production origin and public Google client ID default to the existing MarkHECX site/client. Explicit environment values override those defaults.
 
 ## Environment variables
 

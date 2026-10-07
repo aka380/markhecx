@@ -1,3 +1,10 @@
+// Public OAuth identifier for the existing MarkHECX web client, not a secret.
+// Deployments can override it when using a different Google Cloud project.
+export function configuredGoogleClientId(env: Record<string, string | undefined>) {
+  return env.GOOGLE_CLIENT_ID?.trim() || env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim()
+    || '665821156538-a5fla25a4sskchom3qev6p4mmgp0k0lh.apps.googleusercontent.com';
+}
+
 export function configuredWebOrigins(env: Record<string, string | undefined>) {
   return env.WEB_ORIGINS?.trim() || (env.NODE_ENV === 'production' ? 'https://markhecx.vercel.app' : 'http://127.0.0.1:3001');
 }
