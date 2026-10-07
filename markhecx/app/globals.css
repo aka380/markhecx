@@ -2863,3 +2863,21 @@ video {
 .account-option strong, .account-option small { display: block; }
 .account-option small { color: #aaaab6; margin-top: 3px; line-height: 1.4; }
 .account-option:focus-within { outline: 2px solid #b79bff; outline-offset: 2px; }
+
+/* Keep the AI discovery controls compact without narrowing phone inputs. */
+.discovery-ai-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: 14px;
+  margin-block: 18px;
+}
+.discovery-pagination {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+@media (max-width: 479px) {
+  .discovery-ai-filters { grid-template-columns: 1fr; }
+}

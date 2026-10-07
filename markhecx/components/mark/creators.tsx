@@ -343,7 +343,7 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
           card’s explanation to see the evidence.
         </p>
       )}
-      <div className="form-grid">
+      <div className="form-grid discovery-ai-filters">
         {[
           ["tool", "Tool"],
           ["specialization", "Specialization"],
@@ -362,7 +362,7 @@ export function CreatorsPage({ savedRoute = false }: { savedRoute?: boolean }) {
           </label>
         ))}
         {!!discovery.data?.pages && discovery.data.pages > 1 && (
-          <div>
+          <div className="discovery-pagination">
             <Button
               disabled={(discovery.data.page || 1) <= 1}
               onClick={() =>
