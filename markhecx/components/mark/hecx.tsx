@@ -284,7 +284,13 @@ function HecxWorkspace() {
             <Sparkles size={17} />
             {mode}
           </span>
-          <Badge tone="purple">Local provider</Badge>
+          <Badge tone="purple">
+            {result?.provider.startsWith("Gemini")
+              ? "Gemini · Live"
+              : result
+                ? "Deterministic fallback"
+                : "Provider selected securely on server"}
+          </Badge>
           <div className="mobile-mode">
             <Button variant="ghost" onClick={reset}>
               New session
@@ -341,8 +347,8 @@ function HecxWorkspace() {
                 <span className="small-note">Optional · supplied by you</span>
               </summary>
               <p className="small-note">
-                No campaign backend exists. You can describe requirements here,
-                or use Explain Match on a creator card.
+                Describe requirements for a quick what-if analysis, or open a
+                saved campaign to compare multiple creators with full evidence.
               </p>
               <label className="field">
                 Campaign name
@@ -455,7 +461,7 @@ function HecxWorkspace() {
             <div className="hecx-overview">
               <h1>
                 {mode === "AI Chat"
-                  ? "How can I help you improve your MarkHECX presence?"
+                  ? "Ask HECX about your work, profile, campaigns, or next move."
                   : mode}
               </h1>
               <p>
