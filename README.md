@@ -248,6 +248,8 @@ See [Production Setup](docs/PRODUCTION_SETUP.md) for environment variables, Goog
 ## Current Prototype Limits
 
 - Sample creators and media are illustrative.
+
+
 - Creator evidence is self-declared, not independently certified.
 - Match Studio uses deterministic matching; it does not train Gemini or perform external research.
 - Public password-recovery delivery requires a verified email-sending domain.
